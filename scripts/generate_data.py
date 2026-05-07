@@ -12,7 +12,7 @@ CSV_URL = (
     "https://dadosabertos.aneel.gov.br/dataset/"
     "43dd358f-0ee2-4eb5-80f6-73461bd7d2d1/resource/"
     "0ed659f8-eb6c-4fe9-8784-36df0e07c74a/download/"
-    "reunioes-publicas-diretoria.csv"
+    "pautas-atas-reunioes-publicas-diretoria.csv"
 )
 MIN_YEAR = 2024
 
