@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANEEL – Processos das Reuniões Públicas (2024–2026)</title>
+  <script src="processos_data.js"></script>
+  <style>
+    :root {
+      --blue:#003d7a; --blue-mid:#005baa; --blue-lt:#e8f0fa;
+      --green:#166534; --green-bg:#f0fdf4;
+      --red:#991b1b;   --red-bg:#fef2f2;
+      --amber:#92400e; --amber-bg:#fffbeb;
+      --purple:#5b21b6;--purple-bg:#f5f3ff;
+      --sky:#0369a1;   --sky-bg:#f0f9ff;
+      --border:#d1d9e6;--text:#1e293b;--muted:#64748b;--bg:#eef2f7;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-width:0}
+
+    /* HEADER */
+    header{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-mid) 100%);color:#fff;padding:0}
+    .hdr{max-width:100%;padding:16px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .hdr-logo{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 12px;font-size:18px;font-weight:800;letter-spacing:1px;flex-shrink:0}
+    .hdr-text h1{font-size:17px;font-weight:700;line-height:1.2}
+    .hdr-text p{font-size:11px;opacity:.75;margin-top:2px}
+    .hdr-badge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:16px;padding:4px 12px;font-size:11px;font-weight:600;white-space:nowrap}
+
+    /* MAIN */
+    main{padding:18px 24px;width:100%;overflow-x:hidden}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+    @media(max-width:1100px){.stats{grid-template-columns:1fr 1fr 1fr 1fr;} .sc.wide{grid-column:1/-1}}
+    @media(max-width:600px){.stats{grid-template-columns:1fr 1fr} .sc.wide{grid-column:1/-1}}
+    .sc{background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .sc.wide{text-align:left;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+    .sc .n{font-size:22px;font-weight:800;color:var(--blue-mid);line-height:1}
+    .sc .l{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.3}
+    .sc.g .n{color:var(--green)}.sc.r .n{color:var(--red)}.sc.a .n{color:var(--amber)}.sc.p .n{color:var(--purple)}
+    .sc-wide-top{display:flex;align-items:baseline;gap:10px}
+    .sc-wide-top .n{font-size:26px}
+    .sc-wide-top .l{font-size:11px;color:var(--muted);font-weight:600}
+    .sc-years{display:flex;gap:6px;flex-wrap:wrap}
+    .sc-year{background:var(--blue-lt);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--blue-mid);display:flex;flex-direction:column;align-items:center;gap:1px}
+    .sc-year span{font-size:8px;color:var(--muted);font-weight:400}
+
+    /* CALENDÁRIO MINI */
+    .cal-mini-wrap{width:260px;flex-shrink:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.06);overflow:hidden}
+    .cal-mini-hdr{background:var(--blue);color:#fff;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+    .cal-mini-hdr span{font-size:12px;font-weight:700;flex:1;text-align:center}
+    .cal-nav-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;width:24px;height:24px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .15s}
+    .cal-nav-btn:hover{background:rgba(255,255,255,.3)}
+    .cal-mini-body{padding:8px}
+    .cal-mini-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px}
+    .cal-mini-dow span{text-align:center;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;padding:2px 0}
+    .cal-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    .cal-mini-day{min-height:30px;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:2px 1px;position:relative;font-size:10px}
+    .cal-mini-day.empty{background:transparent}
+    .cal-mini-day.today{background:var(--blue-lt);outline:2px solid var(--blue-mid);outline-offset:-1px}
+    .cal-mini-day.has-meeting{background:#f8faff}
+    .cal-mini-num{font-size:10px;font-weight:600;color:var(--text);line-height:1.4}
+    .cal-mini-day.today .cal-mini-num{color:var(--blue-mid);font-weight:800}
+    .cal-cancel{text-decoration:line-through;color:var(--red)!important;opacity:.7}
+    .cal-mini-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:1px}
+    .cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block}
+    .dot-rpo{background:var(--blue-mid)}
+    .dot-rpe{background:var(--purple)}
+    .dot-rpc{background:var(--amber)}
+    .dot-cpdo{background:#0891b2}
+    .dot-prev{opacity:.5}
+    .cal-mini-legend{padding:6px 10px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+    .cal-mini-leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+    .sit-cancel{text-decoration:line-through;color:var(--red);opacity:.7}
+
+    /* TABS */
+    .card{background:#fff;border-radius:10px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);overflow:hidden;width:100%}
+    .tabs{display:flex;background:#f8fafc;border-bottom:2px solid var(--border)}
+    .tb{padding:11px 22px;font-size:13px;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+    .tb:hover{color:var(--blue-mid);background:rgba(0,91,170,.04)}
+    .tb.active{color:var(--blue-mid);border-bottom-color:var(--blue-mid);background:#fff}
+    .pnl{display:none;padding:18px} .pnl.active{display:block}
+
+    /* FILTER BAR */
+    .fb{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+    .fb input,.fb select{border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text);background:#fff;outline:none;height:30px}
+    .fb input:focus,.fb select:focus{border-color:var(--blue-mid);box-shadow:0 0 0 2px rgba(0,91,170,.1)}
+    .fb input.srch{flex:1;min-width:200px;max-width:340px}
+    .rc{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;margin-left:auto}
+    .btn-x{height:30px;padding:0 12px;background:var(--blue-lt);color:var(--blue-mid);border:1px solid #bfdbfe;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .btn-x:hover{background:#dbeafe}
+
+    /* TABLE WRAPPER - no horizontal scroll */
+    .tw{width:100%;overflow:hidden;border-radius:7px;border:1px solid var(--border)}
+    table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+    colgroup col.c-data  {width:7%}
+    colgroup col.c-reun  {width:9%}
+    colgroup col.c-proc  {width:14%}
+    colgroup col.c-categ {width:13%}
+    colgroup col.c-dir   {width:11%}
+    colgroup col.c-tema  {width:10%}
+    colgroup col.c-res   {width:13%}
+    colgroup col.c-ato   {width:10%}
+    colgroup col.c-ico   {width:3%}
+    thead th{background:var(--blue);color:#fff;padding:9px 10px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;overflow:hidden;cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
+    thead th:hover{background:var(--blue-mid)}
+    thead th.sa::after{content:' ▲'} thead th.sd::after{content:' ▼'}
+    tbody tr.data-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+    tbody tr.data-row:hover{background:var(--blue-lt)}
+    tbody tr.data-row.open{background:#fffbeb;border-bottom:none}
+    tbody td{padding:8px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+    tbody td.wrap{white-space:normal;word-break:break-all}
+    .proc-chip{font-family:monospace;font-size:10px;color:var(--blue-mid);background:var(--blue-lt);padding:2px 5px;border-radius:3px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+    .ico-expand{font-size:10px;color:var(--muted);text-align:center}
+    tr.data-row.open .ico-expand::after{content:'▾';font-size:12px}
+    tr.data-row:not(.open) .ico-expand::after{content:'▸';font-size:12px}
+
+    /* EXPAND ROW */
+    tr.expand-row{background:#fffbeb}
+    tr.expand-row td{padding:0;white-space:normal;overflow:visible}
+    .expand-inner{padding:14px 16px;border-bottom:2px solid #fde68a}
+    .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:800px){.exp-grid{grid-template-columns:1fr}}
+    .exp-item strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px;font-weight:700}
+    .exp-item p{font-size:12px;line-height:1.55;color:var(--text)}
+    .exp-item.full{grid-column:1/-1}
+    .hist-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+    .hist-table th{background:var(--blue-lt);color:var(--blue);padding:5px 8px;text-align:left;font-weight:700;font-size:10px}
+    .hist-table td{padding:5px 8px;border-top:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hist-table tr.hist-row{cursor:pointer}
+    .hist-table tr.hist-row:hover td{background:#f0f4ff}
+    .hist-table tr.hist-row.active td{background:#eff6ff;font-weight:600}
+    .hist-table tr.hist-row td:first-child{border-left:3px solid transparent}
+    .hist-table tr.hist-row.active td:first-child{border-left:3px solid var(--blue-mid)}
+    .hist-det-row td{padding:0;white-space:normal;overflow:visible;border-top:none}
+    .hist-det-inner{background:#f8fbff;border-top:1px dashed #bfdbfe;border-bottom:2px solid var(--blue-lt);padding:12px 14px}
+    .hist-det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px}
+    @media(max-width:700px){.hist-det-grid{grid-template-columns:1fr}}
+    .hist-det-grid .di strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:3px;font-weight:700}
+    .hist-det-grid .di p{color:var(--text);line-height:1.5}
+    .hist-det-grid .di.full{grid-column:1/-1}
+
+    /* BADGES */
+    .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis;vertical-align:middle}
+    /* resultado */
+    .r-del{background:var(--green-bg);color:var(--green)}
+    .r-ret{background:#fef3c7;color:var(--amber)}
+    .r-vis{background:var(--purple-bg);color:var(--purple)}
+    .r-par{background:#fff7ed;color:#c2410c}
+    .r-nao{background:var(--red-bg);color:var(--red)}
+    .r-des{background:var(--sky-bg);color:var(--sky)}
+    /* reunião */
+    .rp-o{background:#eff6ff;color:#1d4ed8}
+    .rp-e{background:var(--purple-bg);color:var(--purple)}
+    .rp-c{background:#fff7ed;color:#c2410c}
+    /* tema */
+    .t-dup{background:#fef3c7;color:#92400e}
+    .t-cont{background:var(--red-bg);color:var(--red)}
+    .t-reg{background:var(--sky-bg);color:var(--sky)}
+    .t-tar{background:var(--green-bg);color:var(--green)}
+    .t-out{background:var(--purple-bg);color:var(--purple)}
+    .t-cron{background:#f0fdf4;color:#15803d}
+    .t-fisc{background:#fff7ed;color:#c2410c}
+    .t-rd{background:#fdf4ff;color:#7e22ce}
+    .t-outro{background:#f8fafc;color:var(--muted)}
+
+    /* PAGINAÇÃO */
+    .pager{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
+    .pi{font-size:11px;color:var(--muted)}
+    .pb-wrap{display:flex;gap:3px}
+    .pb{padding:4px 9px;border:1px solid var(--border);border-radius:5px;background:#fff;font-size:11px;cursor:pointer;color:var(--text);line-height:1}
+    .pb:hover{background:var(--blue-lt);border-color:var(--blue-mid)}
+    .pb.active{background:var(--blue-mid);color:#fff;border-color:var(--blue-mid)}
+    .pb:disabled{opacity:.35;cursor:default}
+    .pp-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+    .pp-wrap select{padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px}
+
+    /* INFO */
+    .ib{background:var(--blue-lt);border:1px solid #bfdbfe;border-radius:7px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--blue);line-height:1.55}
+    .ib a{color:var(--blue-mid)}
+
+    /* FONTES */
+    .src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .src-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px}
+    .src-card h3{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px}
+    .src-card p{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+    .src-links{display:flex;flex-direction:column;gap:6px}
+    .sl{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--blue);color:#fff;border-radius:6px;text-decoration:none;font-size:11px;font-weight:600;transition:background .15s}
+    .sl:hover{background:var(--blue-mid)}
+    .sl.sec{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+    .sl.sec:hover{background:var(--blue-lt)}
+    .legend{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px}
+    .legend h3{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px}
+    .leg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;font-size:11px}
+    .leg-item{display:flex;align-items:center;gap:7px}
+
+    /* LOADING */
+    #loading{position:fixed;inset:0;background:rgba(0,41,82,.8);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#fff}
+    #loading .sp{width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .75s linear infinite}
+    #loading p{font-size:14px;font-weight:600}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #loading.hidden{display:none}
+
+    /* CHATBOT */
+    .chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,61,122,.45);display:flex;align-items:center;justify-content:center;z-index:910;transition:transform .2s,background .15s;font-size:22px;padding:0}
+    .chat-fab:hover{background:var(--blue-mid);transform:scale(1.08)}
+    .chat-panel{position:fixed;bottom:88px;right:24px;width:380px;max-height:560px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);display:flex;flex-direction:column;z-index:910;overflow:hidden;transform:scale(.92) translateY(16px);opacity:0;pointer-events:none;transition:all .2s cubic-bezier(.34,1.56,.64,1)}
+    .chat-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+    .chat-panel-hdr{background:var(--blue);color:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+    .chat-panel-hdr-info strong{font-size:13px;display:block;line-height:1.2}
+    .chat-panel-hdr-info span{font-size:10px;opacity:.7}
+    .chat-hdr-btns{display:flex;gap:4px}
+    .chat-hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;border-radius:5px;width:26px;height:26px;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background .15s;padding:0}
+    .chat-hdr-btn:hover{background:rgba(255,255,255,.3)}
+    .chat-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:220px;scroll-behavior:smooth}
+    .chat-msg{padding:9px 12px;border-radius:10px;font-size:12px;line-height:1.65;max-width:90%;word-break:break-word}
+    .chat-user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+    .chat-assistant{background:#f1f5f9;color:var(--text);align-self:flex-start;border-bottom-left-radius:3px}
+    .chat-assistant strong{font-weight:700}
+    .chat-assistant em{font-style:italic;opacity:.85}
+    .chat-assistant h3,.chat-assistant h4{margin:6px 0 2px;font-size:12px;font-weight:700;color:var(--blue)}
+    .chat-assistant ul,.chat-assistant ol{margin:4px 0;padding-left:16px}
+    .chat-assistant li{margin:2px 0}
+    .chat-assistant code{background:#e2e8f0;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:10px}
+    .chat-assistant p{margin:4px 0}
+    .chat-cursor{display:inline-block;animation:cblink .65s infinite}
+    @keyframes cblink{0%,100%{opacity:1}50%{opacity:0}}
+    .chat-typing{display:flex;gap:4px;align-items:center;height:18px}
+    .chat-typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:cbounce .9s infinite;display:inline-block}
+    .chat-typing span:nth-child(2){animation-delay:.18s}
+    .chat-typing span:nth-child(3){animation-delay:.36s}
+    @keyframes cbounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+    .chat-footer{padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;background:#fafbfc}
+    .chat-footer textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;resize:none;outline:none;font-family:inherit;max-height:100px;overflow-y:auto;line-height:1.5;color:var(--text)}
+    .chat-footer textarea:focus{border-color:var(--blue-mid);box-shadow:0 0 0 2px rgba(0,91,170,.1)}
+    .chat-send-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+    .chat-send-btn:hover{background:var(--blue-mid)}
+    .chat-send-btn:disabled{opacity:.45;cursor:default}
+    .chat-key-tip{font-size:10px;color:var(--muted);padding:6px 12px;border-top:1px solid var(--border);text-align:center;flex-shrink:0}
+    @media(max-width:440px){.chat-panel{right:10px;width:calc(100vw - 20px)}}
+
+    footer{padding:14px 24px;color:var(--muted);font-size:10px;text-align:center;border-top:1px solid var(--border)}
+    footer a{color:var(--blue-mid)}
+  </style>
+</head>
+<body>
+<div id="loading"><div class="sp"></div><p>Carregando processos…</p></div>
+
+<!-- CHATBOT FAB -->
+<button class="chat-fab" onclick="toggleChat()" title="Assistente IA — pergunte sobre os processos">💬</button>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-panel-hdr">
+    <div class="chat-panel-hdr-info">
+      <strong>Assistente ANEEL</strong>
+      <span>Powered by Claude · dados 2024–2026</span>
+    </div>
+    <div class="chat-hdr-btns">
+      <button class="chat-hdr-btn" onclick="clearChat()" title="Nova conversa">🗑</button>
+      <button class="chat-hdr-btn" onclick="toggleChat()" title="Fechar">✕</button>
+    </div>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-key-tip" id="chatKeyTip" style="display:none">Chave API não configurada — clique em 🔑</div>
+  <div class="chat-footer">
+    <textarea id="chatInput" placeholder="Pergunte sobre processos, empresas, decisões…" onkeydown="chatKeydown(event)" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px'"></textarea>
+    <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()" title="Enviar">➤</button>
+  </div>
+</div>
+
+<header>
+  <div class="hdr">
+    <div class="hdr-logo">ANEEL</div>
+    <div class="hdr-text">
+      <h1>Processos das Reuniões Públicas da Diretoria — 2024 a 2026</h1>
+      <p>Compilado de dados oficiais da Agência Nacional de Energia Elétrica</p>
+    </div>
+    <div class="hdr-badge">Atualizado 05/05/2026</div>
+  </div>
+</header>
+
+<main>
+  <div class="stats" id="statsGrid"></div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tb active" onclick="sw('processos')">📂 Processos</button>
+      <button class="tb" onclick="sw('fontes')">🔗 Fontes Oficiais</button>
+    </div>
+
+    <!-- ── PROCESSOS ── -->
+    <div class="pnl active" id="tab-processos">
+      <div class="fb">
+        <input type="text" id="spProc" class="srch" placeholder="🔍 Buscar processo, empresa, assunto, diretor…" oninput="pg=1;rend()">
+        <select id="sfAno" onchange="pg=1;rend()">
+          <option value="">Todos os anos</option>
+          <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+        </select>
+        <select id="sfTema" onchange="pg=1;rend()">
+          <option value="">Todos os temas</option>
+          <option value="DUP">DUP (Utilidade Pública)</option>
+          <option value="Contencioso">Contencioso / Recursos</option>
+          <option value="Regulação">Regulação</option>
+          <option value="Tarifas">Tarifas / RAP</option>
+          <option value="Outorga/Concessão">Outorga / Concessão</option>
+          <option value="Cronograma/Prazo">Cronograma / Prazo</option>
+          <option value="Fiscalização">Fiscalização</option>
+          <option value="P&D">Pesquisa & Desenvolvimento</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <select id="sfRes" onchange="pg=1;rend()">
+          <option value="">Todos os resultados</option>
+          <option value="Deliberado">✓ Deliberado</option>
+          <option value="Retirado da Pauta">↩ Retirado da Pauta</option>
+          <option value="Pedido de Vista">👁 Pedido de Vista</option>
+          <option value="Pedido de Vista + Prorrogação">👁 Vista + Prorrogação</option>
+          <option value="Parcialmente Deliberado">◑ Parcialmente Deliberado</option>
+          <option value="Não Deliberado">✗ Não Deliberado</option>
+        </select>
+        <select id="sfDir" onchange="pg=1;rend()">
+          <option value="">Todos os diretores</option>
+        </select>
+        <select id="sfCat" onchange="pg=1;rend()">
+          <option value="">Todas as classificações</option>
+        </select>
+        <button class="btn-x" onclick="clr()">✕ Limpar</button>
+        <span class="rc" id="rc"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <colgroup>
+            <col class="c-data"><col class="c-reun"><col class="c-proc">
+            <col class="c-tema"><col class="c-dir"><col class="c-categ">
+            <col class="c-res"><col class="c-ato"><col class="c-ico">
+          </colgroup>
+          <thead><tr>
+            <th onclick="srt('dr')">Data</th>
+            <th onclick="srt('rp')">Reunião</th>
+            <th onclick="srt('procSingle')">Nº Processo</th>
+            <th onclick="srt('tema')">Tema</th>
+            <th onclick="srt('dir')">Diretor Relator</th>
+            <th onclick="srt('ass')">Classificação</th>
+            <th onclick="srt('res')">Resultado</th>
+            <th onclick="srt('tipoAto')">Ato Admin.</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <div class="pp-wrap">
+          Por página:
+          <select id="ppSel" onchange="pg=1;rend()">
+            <option value="25">25</option><option value="50" selected>50</option>
+            <option value="100">100</option><option value="200">200</option>
+          </select>
+        </div>
+        <div class="pi" id="pi"></div>
+        <div class="pb-wrap" id="pbWrap"></div>
+      </div>
+    </div>
+
+    <!-- ── FONTES ── -->
+    <div class="pnl" id="tab-fontes">
+      <div class="src-grid">
+        <div class="src-card">
+          <h3>📂 Processos – Pautas e Atas</h3>
+          <p>Histórico das pautas e atas das Reuniões Públicas da Diretoria.</p>
+          <div class="src-links">
+            <a href="https://www2.aneel.gov.br/aplicacoes_liferay/noticias_area/dsp_listarNoticias.cfm?idAreaNoticia=425&c=0&idarea=425" target="_blank" class="sl">Portal ANEEL – Listagem ↗</a>
+          </div>
+        </div>
+        <div class="src-card">
+          <h3>🗂️ Distribuição de Processos</h3>
+          <p>Sessões públicas de sorteio eletrônico de processos aos Diretores-Relatores.</p>
+          <div class="src-links">
+            <a href="https://www2.aneel.gov.br/aplicacoes_liferay/noticias_area/dsp_listarNoticias.cfm?idAreaNoticia=425&c=0&idarea=424" target="_blank" class="sl">Portal ANEEL – Listagem ↗</a>
+          </div>
+        </div>
+        <div class="src-card">
+          <h3>📅 Reuniões Públicas da Diretoria</h3>
+          <p>Calendário, dataset e transmissões ao vivo das Reuniões Públicas.</p>
+          <div class="src-links">
+            <a href="https://www.gov.br/aneel/pt-br/reunioes-publicas/calendario" target="_blank" class="sl">Calendário ANEEL ↗</a>
+            <a href="https://dadosabertos.aneel.gov.br/dataset/reunioes-publicas-da-diretoria" target="_blank" class="sl sec">Dataset de Reuniões ↗</a>
+            <a href="https://www.youtube.com/@aneel" target="_blank" class="sl sec">▶ Canal ANEEL no YouTube ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <h3>Legenda de Temas e Resultados</h3>
+        <div class="leg-grid">
+          <div class="leg-item"><span class="badge t-dup">DUP</span> Declaração de Utilidade Pública</div>
+          <div class="leg-item"><span class="badge t-cont">Contencioso</span> Recursos, Reconsiderações, Impugnações</div>
+          <div class="leg-item"><span class="badge t-reg">Regulação</span> Normas e Regulação do Setor</div>
+          <div class="leg-item"><span class="badge t-tar">Tarifas/RAP</span> Reajustes, Revisões Tarifárias e RAP</div>
+          <div class="leg-item"><span class="badge t-out">Outorga</span> Concessões, Autorizações e Leilões</div>
+          <div class="leg-item"><span class="badge t-cron">Cronograma</span> Alteração de Prazos e Características</div>
+          <div class="leg-item"><span class="badge t-fisc">Fiscalização</span> Termos de Intimação e Prestação de Contas</div>
+          <div class="leg-item"><span class="badge t-rd">P&D</span> Pesquisa & Desenvolvimento</div>
+          <hr style="grid-column:1/-1;border:none;border-top:1px solid var(--border)">
+          <div class="leg-item"><span class="badge r-del">✓ Deliberado</span> Decisão aprovada pela Diretoria</div>
+          <div class="leg-item"><span class="badge r-par">◑ Parcial</span> Parte aprovada</div>
+          <div class="leg-item"><span class="badge r-ret">↩ Retirado</span> Não analisado na reunião</div>
+          <div class="leg-item"><span class="badge r-vis">👁 Vista</span> Pedido de mais tempo para análise</div>
+          <div class="leg-item"><span class="badge r-nao">✗ Não Deliberado</span> Sem decisão</div>
+          <div class="leg-item"><span class="badge r-des">⊙ Destacado</span> Circuito Deliberativo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Dados: <a href="https://dadosabertos.aneel.gov.br/" target="_blank">Portal de Dados Abertos da ANEEL</a> ·
+  <a href="https://www2.aneel.gov.br/aplicacoes_liferay/noticias_area/" target="_blank">Sistema de Notícias ANEEL</a> ·
+  Base atualizada em 01/05/2026 · Compilado informativo não oficial
+</footer>
+
+<script>
+// ── MAPA DE TEMAS ─────────────────────────────────────────────────────────────
+const TEMA_MAP = {
+  'DUP - Servidão':'DUP','DUP - Desapropriação':'DUP',
+  'Recurso Administrativo':'Contencioso','Pedido de Reconsideração':'Contencioso',
+  'Requerimento Administrativo':'Contencioso','Impugnação CCEE':'Contencioso',
+  'Exaurimento de Esfera':'Contencioso','Medida Cautelar':'Contencioso','Agravo':'Contencioso',
+  'Regulação':'Regulação','Norma de Organização':'Regulação',
+  'Regras de Comercialização (NSCL)':'Regulação','Classificação de Migração':'Regulação',
+  'TAC':'Regulação',
+  'Reajuste Tarifário - Concessionárias':'Tarifas','Reajuste Tarifário - Permissionárias':'Tarifas',
+  'Revisão Tarifária - Concessionárias':'Tarifas','Revisão Tarifária - Permissionárias':'Tarifas',
+  'CCC':'Tarifas','RAP':'Tarifas','Estabelecimento de TUST':'Tarifas',
+  'CUST':'Tarifas','MUST':'Tarifas','EUST':'Tarifas',
+  'Reequilíbrio Econômico-Financeiro de Contratos de Concessão':'Tarifas',
+  'Revogação de outorga':'Outorga/Concessão','Leilão':'Outorga/Concessão',
+  'Prorrogação de Concessão':'Outorga/Concessão','Outorga - Concessão':'Outorga/Concessão',
+  'Outorga - Autorização':'Outorga/Concessão','Extinção de concessão':'Outorga/Concessão',
+  'Transferência de controle societário':'Outorga/Concessão',
+  'Transferência de outorga':'Outorga/Concessão',
+  'Contratos de Concessão de UBP':'Outorga/Concessão','Representação Institucional':'Outorga/Concessão',
+  'Alteração de Cronograma':'Cronograma/Prazo',
+  'Alteração de características técnicas':'Cronograma/Prazo',
+  'Termo de Intimação':'Fiscalização','Prestação de Contas Anual':'Fiscalização',
+  'Chamada de Projeto de P&D':'P&D',
+};
+function getTema(ass){ return TEMA_MAP[ass] || 'Outros'; }
+
+function inferRes(dec){
+  if(!dec) return '';
+  const d=dec.toLowerCase();
+  // Pedido de Vista (verificar antes de deliberado, pois pode conter "decidiu" também)
+  if(/pedido de vista\s*\+\s*prorrog/i.test(dec)) return 'Pedido de Vista + Prorrogação';
+  if(/pedido de vista\s*\+\s*retirad/i.test(dec)) return 'Pedido de Vista + Retirado de Pauta';
+  if(/pedido de vista\s*\+\s*n[ãa]o deliberad/i.test(dec)) return 'Pedido de Vista + Não Deliberado';
+  if(/pedido de vista|vista regimental/i.test(dec)) return 'Pedido de Vista';
+  // Retirado da Pauta
+  if(/retirad[oa]\s+da\s+pauta|retirad[oa]\s+de\s+pauta/i.test(dec)) return 'Retirado da Pauta';
+  // Parcialmente Deliberado
+  if(/parcialmente deliberad/i.test(dec)) return 'Parcialmente Deliberado';
+  // Não Deliberado
+  if(/n[ãa]o\s+(foi\s+)?deliberad|n[ãa]o\s+deliberad/i.test(dec)) return 'Não Deliberado';
+  // Destacado no Circuito
+  if(/destacad[oa]\s+no\s+circuito|circuito deliberativo/i.test(dec)) return 'Destacado no Circuito Deliberativo';
+  // Deliberado — unanimidade, maioria, aprovado, deliberou, decidiu, homologou, autorizou
+  if(/unanimidade|por maioria|deliberou|foi deliberad|foi aprovad|decidiu|homologou|autorizou|aprovou|deu provimento|negou provimento|conheceu\s+e\s+(proveu|negou)|procedente/i.test(dec)) return 'Deliberado';
+  return '';
+}
+
+// ── BADGE HELPERS ─────────────────────────────────────────────────────────────
+const E=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// Formata NUP: 17 dígitos → NNNNN.NNNNNN/AAAA-DD
+function fmtProc(num){
+  const n=(num||'').trim().replace(/\D/g,'');
+  if(n.length!==17) return num||'';
+  return`${n.slice(0,5)}.${n.slice(5,11)}/${n.slice(11,15)}-${n.slice(15,17)}`;
+}
+const fd=d=>{if(!d)return'—';const[y,m,v]=d.split('-');return`${v}/${m}/${y}`};
+
+function resBadge(r){
+  if(!r)return'';
+  const M={'Deliberado':['r-del','✓'],'Retirado da Pauta':['r-ret','↩'],
+    'Pedido de Vista':['r-vis','👁'],'Pedido de Vista + Prorrogação':['r-vis','👁 +Prorrog.'],
+    'Pedido de Vista + Retirado de Pauta':['r-vis','👁 +Ret.'],
+    'Pedido de Vista + Não Deliberado':['r-vis','👁 +ND'],
+    'Parcialmente Deliberado':['r-par','◑'],'Não Deliberado':['r-nao','✗'],
+    'Destacado no Circuito Deliberativo':['r-des','⊙']};
+  const [cls,ico]=M[r]||['r-outro','•'];
+  const lbl=r==='Parcialmente Deliberado'?'◑ Parcial':r==='Retirado da Pauta'?'↩ Retirado':
+            r==='Deliberado'?'✓ Deliberado':r.startsWith('Pedido de Vista')?(ico+' Vista'):
+            r==='Não Deliberado'?'✗ Não Del.':'⊙ Destacado';
+  return`<span class="badge ${cls}" title="${E(r)}">${lbl}</span>`;
+}
+function rpBadge(rp){
+  if(!rp)return'';
+  const cls=rp.includes('RPE')?'rp-e':rp.includes('RPC')?'rp-c':'rp-o';
+  return`<span class="badge ${cls}">${E(rp)}</span>`;
+}
+function temaBadge(t){
+  const M={'DUP':'t-dup','Contencioso':'t-cont','Regulação':'t-reg','Tarifas':'t-tar',
+    'Outorga/Concessão':'t-out','Cronograma/Prazo':'t-cron','Fiscalização':'t-fisc','P&D':'t-rd'};
+  return`<span class="badge ${M[t]||'t-outro'}">${E(t||'Outros')}</span>`;
+}
+function atoLabel(tipoAto){
+  const M={'Resolução Autorizativa':'Res. Aut.','Resolução Normativa':'Res. Norm.',
+    'Despacho':'Despacho','Resolução':'Resolução','Portaria':'Portaria'};
+  return M[tipoAto]||tipoAto||'—';
+}
+function dirLabel(d){
+  if(!d)return'—';
+  const p=d.split(' ');
+  if(p.length<=2)return d.charAt(0)+d.slice(1).toLowerCase();
+  // Primeiro + Último nome
+  const first=p[0].charAt(0)+p[0].slice(1).toLowerCase();
+  const last=p[p.length-1].charAt(0)+p[p.length-1].slice(1).toLowerCase();
+  return`${first} ${last}`;
+}
+
+// ── PRÉ-PROCESSAMENTO ─────────────────────────────────────────────────────────
+let EXP=[], HIST=new Map();   // HIST: procNum → [{...}]
+
+function buildData(){
+  PROCESSOS.forEach(p=>{
+    const nums=(p.proc||'').split(' - ').map(n=>n.trim()).filter(n=>n.length>3);
+    if(!nums.length) nums.push(p.proc||'');
+    const tema=getTema(p.ass);
+    const res=p.res||inferRes(p.dec)||inferRes(p.txt)||'';
+    nums.forEach(num=>{
+      const row={...p,procSingle:num,tema,res};
+      EXP.push(row);
+      if(!HIST.has(num))HIST.set(num,[]);
+      HIST.get(num).push(row);
+    });
+  });
+}
+
+// ── FILTROS / SORT ────────────────────────────────────────────────────────────
+function initFilters(){
+  const dirs=[...new Set(EXP.map(p=>p.dir).filter(Boolean))].sort();
+  const sfDir=document.getElementById('sfDir');
+  dirs.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=dirLabel(d)+' ('+d.split(' ').slice(-1)[0].charAt(0)+d.split(' ').slice(-1)[0].slice(1).toLowerCase()+')';sfDir.appendChild(o)});
+
+  const cats=[...new Set(EXP.map(p=>p.ass).filter(Boolean))].sort();
+  const sfCat=document.getElementById('sfCat');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sfCat.appendChild(o)});
+}
+
+let filtered=[], pg=1, sortS={col:'dr',dir:-1};
+
+function srt(col){
+  if(sortS.col===col)sortS.dir*=-1;else{sortS.col=col;sortS.dir=1;}
+  document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sa','sd'));
+  const cols=['dr','rp','procSingle','tema','dir','ass','res','tipoAto'];
+  const i=cols.indexOf(col);
+  if(i>=0)document.querySelectorAll('thead th')[i].classList.add(sortS.dir===1?'sa':'sd');
+  pg=1;rend();
+}
+
+function clr(){
+  ['spProc','sfAno','sfTema','sfRes','sfDir','sfCat'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  pg=1;rend();
+}
+
+function rend(){
+  const s=(document.getElementById('spProc').value||'').toLowerCase();
+  const ano=document.getElementById('sfAno').value;
+  const tema=document.getElementById('sfTema').value;
+  const res=document.getElementById('sfRes').value;
+  const dir=document.getElementById('sfDir').value;
+  const cat=document.getElementById('sfCat').value;
+
+  filtered=EXP.filter(p=>{
+    const y=p.dr?p.dr.slice(0,4):'';
+    if(ano&&y!==ano)return false;
+    if(tema&&p.tema!==tema)return false;
+    if(res&&p.res!==res)return false;
+    if(dir&&p.dir!==dir)return false;
+    if(cat&&p.ass!==cat)return false;
+    if(s){
+      const hay=(p.procSingle||'')+fmtProc(p.procSingle)+(p.dir||'')+(p.ass||'')+(p.txt||'')+(p.dec||'')+(p.rp||'')+(p.res||'')+(p.tipoAto||'')+(p.tema||'');
+      if(!hay.toLowerCase().includes(s))return false;
+    }
+    return true;
+  });
+
+  const sc=sortS.col,sd=sortS.dir;
+  filtered.sort((a,b)=>((a[sc]||'').localeCompare(b[sc]||'','pt-BR'))*sd);
+
+  const pp=parseInt(document.getElementById('ppSel').value)||50;
+  const total=filtered.length,pages=Math.ceil(total/pp)||1;
+  if(pg>pages)pg=pages;
+  const st=(pg-1)*pp,en=Math.min(st+pp,total);
+  const page=filtered.slice(st,en);
+
+  document.getElementById('rc').textContent=`${total.toLocaleString('pt-BR')} processo(s)`;
+  document.getElementById('pi').textContent=total?`${(st+1).toLocaleString('pt-BR')}–${en.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')}`:'';
+
+  const tbody=document.getElementById('tbody');
+  // fechar qualquer expand aberto
+  document.querySelectorAll('.expand-row').forEach(r=>r.remove());
+
+  if(!page.length){
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted)">Nenhum resultado encontrado.</td></tr>`;
+    renderPager(pages,pp);return;
+  }
+
+  tbody.innerHTML=page.map((p,i)=>{
+    const rid=`r${st+i}`;
+    return`<tr class="data-row" id="${rid}" onclick="toggle('${rid}',${st+i})">
+      <td title="${E(p.dr)}">${fd(p.dr)}</td>
+      <td title="${E(p.rp)}">${rpBadge(p.rp)}</td>
+      <td class="wrap" style="word-break:break-all;white-space:normal"><span class="proc-chip" title="${E(fmtProc(p.procSingle))}">${E(fmtProc(p.procSingle))}</span></td>
+      <td>${temaBadge(p.tema)}</td>
+      <td title="${E(p.dir)}">${E(dirLabel(p.dir))}</td>
+      <td title="${E(p.ass)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E(p.ass||'—')}</td>
+      <td>${resBadge(p.res)}</td>
+      <td title="${E(p.tipoAto)+(p.ato&&p.ato!=='0'?' – Nº '+p.ato:'')}">${E(atoLabel(p.tipoAto))}${p.ato&&p.ato!=='0'?`<br><small style="color:var(--muted);font-size:9px">Nº ${E(p.ato)}</small>`:''}</td>
+      <td class="ico-expand"></td>
+    </tr>`;
+  }).join('');
+
+  renderPager(pages,pp);
+}
+
+// Armazena histórico por rid para uso em selHist
+const HIST_STORE={};
+
+function detailHTML(p){
+  return`
+    <div class="exp-item full">
+      <strong>Número do Processo</strong>
+      <p style="font-family:monospace;color:var(--blue-mid);font-size:12px">${E(fmtProc(p.procSingle))}</p>
+    </div>
+    <div class="exp-item full">
+      <strong>Assunto Completo / Empresa Envolvida</strong>
+      <p>${E(p.txt||'—')}</p>
+    </div>
+    <div class="exp-item full">
+      <strong>Decisão / Julgamento</strong>
+      <p>${E(p.dec||'—')}</p>
+    </div>
+    <div class="exp-item">
+      <strong>Resultado</strong>
+      <p>${resBadge(p.res)}</p>
+    </div>
+    <div class="exp-item">
+      <strong>Ato Administrativo</strong>
+      <p>${E(p.tipoAto||'—')}${p.ato&&p.ato!=='0'?' – Nº '+E(p.ato):''}</p>
+    </div>
+    <div class="exp-item">
+      <strong>Diretor Relator</strong>
+      <p>${E((p.dir||'').split(' ').map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' '))}</p>
+    </div>
+    <div class="exp-item">
+      <strong>Reunião / Data</strong>
+      <p>${E(p.rp||'—')} — ${fd(p.dr)}</p>
+    </div>`;
+}
+
+function selHist(rid, hidx){
+  const hist=HIST_STORE[rid];
+  if(!hist) return;
+  const p=hist[hidx];
+  const detId=`hdet-${rid}-${hidx}`;
+  const existing=document.getElementById(detId);
+
+  // remove todos os detalhes de histórico abertos neste expand
+  document.querySelectorAll(`[id^="hdet-${rid}-"]`).forEach(r=>r.remove());
+  // remove active e reseta ícones de todas as linhas
+  document.querySelectorAll(`#histtbl-${rid} tr.hist-row`).forEach(r=>{
+    r.classList.remove('active');
+    const ico=r.querySelector('.hist-ico');
+    if(ico) ico.textContent='▸';
+  });
+
+  if(existing) return; // era o mesmo — só fechou
+
+  // marca linha ativa e atualiza ícone
+  const clickedRow=document.getElementById(`histrow-${rid}-${hidx}`);
+  if(clickedRow){
+    clickedRow.classList.add('active');
+    const ico=clickedRow.querySelector('.hist-ico');
+    if(ico) ico.textContent='▾';
+  }
+
+  // cria linha de detalhe
+  const dirFmt=(p.dir||'').split(' ').map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' ');
+  const tr=document.createElement('tr');
+  tr.id=detId;
+  tr.className='hist-det-row';
+  tr.innerHTML=`<td colspan="5"><div class="hist-det-inner">
+    <div class="hist-det-grid">
+      <div class="di full">
+        <strong>Assunto Completo / Empresa Envolvida</strong>
+        <p>${E(p.txt||'—')}</p>
+      </div>
+      <div class="di full">
+        <strong>Decisão / Julgamento</strong>
+        <p>${E(p.dec||'—')}</p>
+      </div>
+      <div class="di">
+        <strong>Resultado</strong>
+        <p>${resBadge(p.res)}</p>
+      </div>
+      <div class="di">
+        <strong>Ato Administrativo</strong>
+        <p>${E(p.tipoAto||'—')}${p.ato&&p.ato!=='0'?' – Nº '+E(p.ato):''}</p>
+      </div>
+      <div class="di">
+        <strong>Diretor Relator</strong>
+        <p>${E(dirFmt||'—')}</p>
+      </div>
+      <div class="di">
+        <strong>Reunião / Data</strong>
+        <p>${E(p.rp||'—')} — ${fd(p.dr)}</p>
+      </div>
+    </div>
+  </div></td>`;
+
+  if(clickedRow) clickedRow.after(tr);
+}
+
+function toggle(rid,idx){
+  const row=document.getElementById(rid);
+  if(!row)return;
+  const exist=document.getElementById('ex-'+rid);
+  document.querySelectorAll('.expand-row').forEach(r=>r.remove());
+  document.querySelectorAll('.data-row.open').forEach(r=>r.classList.remove('open'));
+  if(exist){return;}
+  row.classList.add('open');
+  const p=filtered[idx];
+  if(!p)return;
+
+  const hist=HIST.get(p.procSingle)||[];
+  HIST_STORE[rid]=hist;
+
+  // índice da ocorrência atual no histórico (para marcar como ativa)
+  const curIdx=hist.findIndex(h=>h.dr===p.dr && h.rp===p.rp);
+
+  let histSection='';
+  if(hist.length>1){
+    const rows=hist.map((h,i)=>`<tr class="hist-row${i===curIdx?' active':''}" id="histrow-${rid}-${i}" onclick="selHist('${rid}',${i});event.stopPropagation()">
+      <td>${fd(h.dr)}</td>
+      <td>${rpBadge(h.rp)}</td>
+      <td>${E(dirLabel(h.dir))}</td>
+      <td>${resBadge(h.res)}</td>
+      <td style="font-size:10px">${E(atoLabel(h.tipoAto))}${h.ato&&h.ato!=='0'?' Nº '+E(h.ato):''}</td>
+      <td style="text-align:center;color:var(--muted);font-size:11px" class="hist-ico">▸</td>
+    </tr>`).join('');
+    histSection=`<div class="exp-item full">
+      <strong>📋 Histórico de Reuniões — ${hist.length} ocorrência${hist.length>1?'s':''} &nbsp;·&nbsp; <span style="font-weight:400;color:var(--muted)">clique em uma linha para expandir os detalhes</span></strong>
+      <table class="hist-table" id="histtbl-${rid}">
+        <thead><tr><th>Data</th><th>Reunião</th><th>Diretor</th><th>Resultado</th><th>Ato</th><th style="width:24px"></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  const tr=document.createElement('tr');
+  tr.id='ex-'+rid;
+  tr.className='expand-row';
+  tr.innerHTML=`<td colspan="9"><div class="expand-inner">
+    <div class="exp-grid" id="det-${rid}">${detailHTML(p)}</div>
+    ${hist.length>1?`<div class="exp-grid" style="margin-top:12px">${histSection}</div>`:''}
+  </div></td>`;
+  row.after(tr);
+}
+
+function renderPager(pages,pp){
+  const wrap=document.getElementById('pbWrap');
+  let h=`<button class="pb" ${pg<=1?'disabled':''} onclick="pg--;rend()">‹ Ant.</button>`;
+  const lo=Math.max(1,pg-3),hi=Math.min(pages,lo+6);
+  for(let i=lo;i<=hi;i++)h+=`<button class="pb ${i===pg?'active':''}" onclick="pg=${i};rend()">${i}</button>`;
+  h+=`<button class="pb" ${pg>=pages?'disabled':''} onclick="pg++;rend()">Próx. ›</button>`;
+  wrap.innerHTML=h;
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats(){
+  const t=EXP.length;
+  const del=EXP.filter(p=>p.res==='Deliberado').length;
+  const ret=EXP.filter(p=>p.res==='Retirado da Pauta').length;
+  const vis=EXP.filter(p=>(p.res||'').includes('Vista')).length;
+  const p24=EXP.filter(p=>p.dr&&p.dr.startsWith('2024')).length;
+  const p25=EXP.filter(p=>p.dr&&p.dr.startsWith('2025')).length;
+  const p26=EXP.filter(p=>p.dr&&p.dr.startsWith('2026')).length;
+  const energisa=EXP.filter(p=>((p.txt||'')+(p.dec||'')+(p.ass||'')).toLowerCase().includes('energisa')).length;
+
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="sc wide">
+      <div class="sc-wide-top"><div class="n">${t.toLocaleString('pt-BR')}</div><div class="l">Itens de Pauta</div></div>
+      <div class="sc-years">
+        <div class="sc-year">${p24.toLocaleString('pt-BR')}<span>2024</span></div>
+        <div class="sc-year">${p25.toLocaleString('pt-BR')}<span>2025</span></div>
+        <div class="sc-year">${p26.toLocaleString('pt-BR')}<span>2026</span></div>
+      </div>
+    </div>
+    <div class="sc g"><div class="n">${del.toLocaleString('pt-BR')}</div><div class="l">Deliberados</div></div>
+    <div class="sc a"><div class="n">${ret.toLocaleString('pt-BR')}</div><div class="l">Retirados<br>da Pauta</div></div>
+    <div class="sc p"><div class="n">${vis.toLocaleString('pt-BR')}</div><div class="l">Pedidos<br>de Vista</div></div>
+    <div class="sc" style="cursor:pointer" onclick="document.getElementById('spProc').value='energisa';pg=1;rend();sw('processos')" title="Clique para filtrar">
+      <div class="n" style="color:#0369a1">${energisa.toLocaleString('pt-BR')}</div>
+      <div class="l">Energisa<br><span style="font-size:9px">clique para filtrar</span></div>
+    </div>`;
+}
+
+// ── REUNIÕES ─────────────────────────────────────────────────────────────────
+const REUNIOES=[
+  {data:"2024-01-23",tipo:"Ordinária",sit:"Executada",id:"1/2024 - RPO",ano:"2024"},
+  {data:"2024-01-30",tipo:"Ordinária",sit:"Executada",id:"2/2024 - RPO",ano:"2024"},
+  {data:"2024-02-06",tipo:"Ordinária",sit:"Executada",id:"3/2024 - RPO",ano:"2024"},
+  {data:"2024-02-20",tipo:"Ordinária",sit:"Executada",id:"4/2024 - RPO",ano:"2024"},
+  {data:"2024-02-27",tipo:"Ordinária",sit:"Executada",id:"5/2024 - RPO",ano:"2024"},
+  {data:"2024-03-05",tipo:"Ordinária",sit:"Executada",id:"6/2024 - RPO",ano:"2024"},
+  {data:"2024-03-12",tipo:"Ordinária",sit:"Executada",id:"7/2024 - RPO",ano:"2024"},
+  {data:"2024-03-19",tipo:"Ordinária",sit:"Executada",id:"8/2024 - RPO",ano:"2024"},
+  {data:"2024-03-26",tipo:"Ordinária",sit:"Executada",id:"9/2024 - RPO",ano:"2024"},
+  {data:"2024-04-02",tipo:"Ordinária",sit:"Executada",id:"10/2024 - RPO",ano:"2024"},
+  {data:"2024-04-09",tipo:"Ordinária",sit:"Executada",id:"11/2024 - RPO",ano:"2024"},
+  {data:"2024-04-15",tipo:"Extraordinária",sit:"Executada",id:"1/2024 - RPE",ano:"2024"},
+  {data:"2024-04-16",tipo:"Ordinária",sit:"Executada",id:"12/2024 - RPO",ano:"2024"},
+  {data:"2024-04-23",tipo:"Ordinária",sit:"Executada",id:"13/2024 - RPO",ano:"2024"},
+  {data:"2024-04-30",tipo:"Ordinária",sit:"Executada",id:"14/2024 - RPO",ano:"2024"},
+  {data:"2024-05-07",tipo:"Ordinária",sit:"Cancelada",id:"15/2024 - RPO",ano:"2024"},
+  {data:"2024-05-14",tipo:"Ordinária",sit:"Executada",id:"16/2024 - RPO",ano:"2024"},
+  {data:"2024-05-21",tipo:"Ordinária",sit:"Executada",id:"17/2024 - RPO",ano:"2024"},
+  {data:"2024-05-28",tipo:"Ordinária",sit:"Executada",id:"18/2024 - RPO",ano:"2024"},
+  {data:"2024-06-04",tipo:"Ordinária",sit:"Executada",id:"19/2024 - RPO",ano:"2024"},
+  {data:"2024-06-11",tipo:"Ordinária",sit:"Executada",id:"20/2024 - RPO",ano:"2024"},
+  {data:"2024-06-18",tipo:"Ordinária",sit:"Executada",id:"21/2024 - RPO",ano:"2024"},
+  {data:"2024-06-25",tipo:"Ordinária",sit:"Executada",id:"22/2024 - RPO",ano:"2024"},
+  {data:"2024-07-02",tipo:"Ordinária",sit:"Executada",id:"23/2024 - RPO",ano:"2024"},
+  {data:"2024-07-09",tipo:"Ordinária",sit:"Executada",id:"24/2024 - RPO",ano:"2024"},
+  {data:"2024-07-16",tipo:"Ordinária",sit:"Executada",id:"25/2024 - RPO",ano:"2024"},
+  {data:"2024-07-23",tipo:"Ordinária",sit:"Executada",id:"26/2024 - RPO",ano:"2024"},
+  {data:"2024-07-30",tipo:"Ordinária",sit:"Executada",id:"27/2024 - RPO",ano:"2024"},
+  {data:"2024-08-06",tipo:"Ordinária",sit:"Executada",id:"28/2024 - RPO",ano:"2024"},
+  {data:"2024-08-13",tipo:"Ordinária",sit:"Executada",id:"29/2024 - RPO",ano:"2024"},
+  {data:"2024-08-20",tipo:"Ordinária",sit:"Executada",id:"30/2024 - RPO",ano:"2024"},
+  {data:"2024-08-27",tipo:"Ordinária",sit:"Executada",id:"31/2024 - RPO",ano:"2024"},
+  {data:"2024-09-03",tipo:"Ordinária",sit:"Executada",id:"32/2024 - RPO",ano:"2024"},
+  {data:"2024-09-10",tipo:"Ordinária",sit:"Executada",id:"33/2024 - RPO",ano:"2024"},
+  {data:"2024-09-17",tipo:"Ordinária",sit:"Executada",id:"34/2024 - RPO",ano:"2024"},
+  {data:"2024-09-24",tipo:"Ordinária",sit:"Executada",id:"35/2024 - RPO",ano:"2024"},
+  {data:"2024-09-27",tipo:"Extraordinária",sit:"Executada",id:"2/2024 - RPE",ano:"2024"},
+  {data:"2024-10-01",tipo:"Ordinária",sit:"Executada",id:"36/2024 - RPO",ano:"2024"},
+  {data:"2024-10-08",tipo:"Ordinária",sit:"Executada",id:"37/2024 - RPO",ano:"2024"},
+  {data:"2024-10-08",tipo:"Extraordinária",sit:"Executada",id:"3/2024 - RPE",ano:"2024"},
+  {data:"2024-10-15",tipo:"Ordinária",sit:"Executada",id:"38/2024 - RPO",ano:"2024"},
+  {data:"2024-10-22",tipo:"Ordinária",sit:"Executada",id:"39/2024 - RPO",ano:"2024"},
+  {data:"2024-10-29",tipo:"Ordinária",sit:"Executada",id:"40/2024 - RPO",ano:"2024"},
+  {data:"2024-11-05",tipo:"Ordinária",sit:"Executada",id:"41/2024 - RPO",ano:"2024"},
+  {data:"2024-11-12",tipo:"Ordinária",sit:"Executada",id:"42/2024 - RPO",ano:"2024"},
+  {data:"2024-11-19",tipo:"Ordinária",sit:"Executada",id:"43/2024 - RPO",ano:"2024"},
+  {data:"2024-11-26",tipo:"Ordinária",sit:"Executada",id:"44/2024 - RPO",ano:"2024"},
+  {data:"2024-12-03",tipo:"Ordinária",sit:"Executada",id:"45/2024 - RPO",ano:"2024"},
+  {data:"2024-12-10",tipo:"Ordinária",sit:"Executada",id:"46/2024 - RPO",ano:"2024"},
+  {data:"2024-12-19",tipo:"Extraordinária",sit:"Executada",id:"4/2024 - RPE",ano:"2024"},
+  {data:"2025-01-21",tipo:"Ordinária",sit:"Executada",id:"1/2025 - RPO",ano:"2025"},
+  {data:"2025-01-28",tipo:"Ordinária",sit:"Executada",id:"2/2025 - RPO",ano:"2025"},
+  {data:"2025-02-04",tipo:"Ordinária",sit:"Executada",id:"3/2025 - RPO",ano:"2025"},
+  {data:"2025-02-11",tipo:"Ordinária",sit:"Executada",id:"4/2025 - RPO",ano:"2025"},
+  {data:"2025-02-18",tipo:"Ordinária",sit:"Executada",id:"5/2025 - RPO",ano:"2025"},
+  {data:"2025-02-25",tipo:"Ordinária",sit:"Executada",id:"6/2025 - RPO",ano:"2025"},
+  {data:"2025-03-11",tipo:"Ordinária",sit:"Executada",id:"7/2025 - RPO",ano:"2025"},
+  {data:"2025-03-18",tipo:"Ordinária",sit:"Executada",id:"8/2025 - RPO",ano:"2025"},
+  {data:"2025-03-25",tipo:"Ordinária",sit:"Executada",id:"9/2025 - RPO",ano:"2025"},
+  {data:"2025-04-01",tipo:"Ordinária",sit:"Executada",id:"10/2025 - RPO",ano:"2025"},
+  {data:"2025-04-08",tipo:"Ordinária",sit:"Executada",id:"11/2025 - RPO",ano:"2025"},
+  {data:"2025-04-15",tipo:"Ordinária",sit:"Executada",id:"12/2025 - RPO",ano:"2025"},
+  {data:"2025-04-22",tipo:"Ordinária",sit:"Executada",id:"13/2025 - RPO",ano:"2025"},
+  {data:"2025-04-29",tipo:"Ordinária",sit:"Executada",id:"14/2025 - RPO",ano:"2025"},
+  {data:"2025-05-06",tipo:"Ordinária",sit:"Executada",id:"15/2025 - RPO",ano:"2025"},
+  {data:"2025-05-13",tipo:"Ordinária",sit:"Executada",id:"16/2025 - RPO",ano:"2025"},
+  {data:"2025-05-20",tipo:"Ordinária",sit:"Executada",id:"17/2025 - RPO",ano:"2025"},
+  {data:"2025-05-27",tipo:"Ordinária",sit:"Executada",id:"18/2025 - RPO",ano:"2025"},
+  {data:"2025-06-03",tipo:"Ordinária",sit:"Executada",id:"19/2025 - RPO",ano:"2025"},
+  {data:"2025-06-10",tipo:"Ordinária",sit:"Executada",id:"20/2025 - RPO",ano:"2025"},
+  {data:"2025-06-17",tipo:"Ordinária",sit:"Executada",id:"21/2025 - RPO",ano:"2025"},
+  {data:"2025-06-24",tipo:"Ordinária",sit:"Executada",id:"22/2025 - RPO",ano:"2025"},
+  {data:"2025-07-01",tipo:"Ordinária",sit:"Executada",id:"23/2025 - RPO",ano:"2025"},
+  {data:"2025-07-08",tipo:"Ordinária",sit:"Cancelada",id:"24/2025 - RPO",ano:"2025"},
+  {data:"2025-07-15",tipo:"Ordinária",sit:"Executada",id:"25/2025 - RPO",ano:"2025"},
+  {data:"2025-07-22",tipo:"Ordinária",sit:"Executada",id:"26/2025 - RPO",ano:"2025"},
+  {data:"2025-07-29",tipo:"Ordinária",sit:"Executada",id:"27/2025 - RPO",ano:"2025"},
+  {data:"2025-08-05",tipo:"Ordinária",sit:"Executada",id:"28/2025 - RPO",ano:"2025"},
+  {data:"2025-08-12",tipo:"Ordinária",sit:"Executada",id:"29/2025 - RPO",ano:"2025"},
+  {data:"2025-08-19",tipo:"Ordinária",sit:"Executada",id:"30/2025 - RPO",ano:"2025"},
+  {data:"2025-08-26",tipo:"Ordinária",sit:"Executada",id:"31/2025 - RPO",ano:"2025"},
+  {data:"2025-09-02",tipo:"Ordinária",sit:"Executada",id:"32/2025 - RPO",ano:"2025"},
+  {data:"2025-09-09",tipo:"Ordinária",sit:"Executada",id:"33/2025 - RPO",ano:"2025"},
+  {data:"2025-09-16",tipo:"Ordinária",sit:"Executada",id:"34/2025 - RPO",ano:"2025"},
+  {data:"2025-09-16",tipo:"Extraordinária",sit:"Executada",id:"1/2025 - RPE",ano:"2025"},
+  {data:"2025-09-23",tipo:"Ordinária",sit:"Executada",id:"35/2025 - RPO",ano:"2025"},
+  {data:"2025-09-30",tipo:"Coletiva",sit:"Executada",id:"1/2025 - RPC",ano:"2025"},
+  {data:"2025-10-07",tipo:"Ordinária",sit:"Executada",id:"36/2025 - RPO",ano:"2025"},
+  {data:"2025-10-14",tipo:"Coletiva",sit:"Executada",id:"2/2025 - RPC",ano:"2025"},
+  {data:"2025-10-21",tipo:"Ordinária",sit:"Executada",id:"37/2025 - RPO",ano:"2025"},
+  {data:"2025-10-28",tipo:"Coletiva",sit:"Executada",id:"3/2025 - RPC",ano:"2025"},
+  {data:"2025-11-04",tipo:"Ordinária",sit:"Executada",id:"38/2025 - RPO",ano:"2025"},
+  {data:"2025-11-11",tipo:"Coletiva",sit:"Executada",id:"4/2025 - RPC",ano:"2025"},
+  {data:"2025-11-18",tipo:"Ordinária",sit:"Executada",id:"39/2025 - RPO",ano:"2025"},
+  {data:"2025-11-25",tipo:"Coletiva",sit:"Executada",id:"5/2025 - RPC",ano:"2025"},
+  {data:"2025-12-02",tipo:"Ordinária",sit:"Executada",id:"40/2025 - RPO",ano:"2025"},
+  {data:"2025-12-09",tipo:"Ordinária",sit:"Executada",id:"41/2025 - RPO",ano:"2025"},
+  {data:"2025-12-18",tipo:"Extraordinária",sit:"Executada",id:"2/2025 - RPE",ano:"2025"},
+  {data:"2026-01-20",tipo:"Ordinária",sit:"Executada",id:"1/2026 - RPO",ano:"2026"},
+  {data:"2026-01-27",tipo:"Ordinária",sit:"Executada",id:"2/2026 - RPO",ano:"2026"},
+  {data:"2026-02-03",tipo:"Coletiva",sit:"Executada",id:"1/2026 - RPC",ano:"2026"},
+  {data:"2026-02-10",tipo:"Ordinária",sit:"Executada",id:"3/2026 - RPO",ano:"2026"},
+  {data:"2026-02-11",tipo:"Extraordinária",sit:"Executada",id:"1/2026 - RPE",ano:"2026"},
+  {data:"2026-02-13",tipo:"Extraordinária",sit:"Executada",id:"2/2026 - RPE",ano:"2026"},
+  {data:"2026-02-24",tipo:"Ordinária",sit:"Executada",id:"4/2026 - RPO",ano:"2026"},
+  {data:"2026-03-03",tipo:"Coletiva",sit:"Executada",id:"2/2026 - RPC",ano:"2026"},
+  {data:"2026-03-10",tipo:"Ordinária",sit:"Executada",id:"5/2026 - RPO",ano:"2026"},
+  {data:"2026-03-17",tipo:"Coletiva",sit:"Executada",id:"3/2026 - RPC",ano:"2026"},
+  {data:"2026-03-24",tipo:"Ordinária",sit:"Executada",id:"6/2026 - RPO",ano:"2026"},
+  {data:"2026-03-31",tipo:"Coletiva",sit:"Executada",id:"4/2026 - RPC",ano:"2026"},
+  {data:"2026-04-07",tipo:"Ordinária",sit:"Executada",id:"7/2026 - RPO",ano:"2026"},
+  {data:"2026-04-14",tipo:"Coletiva",sit:"Executada",id:"5/2026 - RPC",ano:"2026"},
+  {data:"2026-04-22",tipo:"Ordinária",sit:"Executada",id:"8/2026 - RPO",ano:"2026"},
+  {data:"2026-04-28",tipo:"Coletiva",sit:"Executada",id:"6/2026 - RPC",ano:"2026"},
+  {data:"2026-05-05",tipo:"Ordinária",sit:"Pendente",id:"9/2026 - RPO",ano:"2026"},
+  // Futuras 2026 – fonte: gov.br/aneel/reunioes-publicas/calendario
+  {data:"2026-05-12",tipo:"CPDO",sit:"Prevista",id:"CPDO-05/2026",ano:"2026"},
+  {data:"2026-05-19",tipo:"Ordinária",sit:"Prevista",id:"10/2026 - RPO",ano:"2026"},
+  {data:"2026-05-26",tipo:"CPDO",sit:"Prevista",id:"CPDO-06/2026",ano:"2026"},
+  {data:"2026-06-02",tipo:"Ordinária",sit:"Prevista",id:"11/2026 - RPO",ano:"2026"},
+  {data:"2026-06-09",tipo:"CPDO",sit:"Prevista",id:"CPDO-07/2026",ano:"2026"},
+  {data:"2026-06-16",tipo:"Ordinária",sit:"Prevista",id:"12/2026 - RPO",ano:"2026"},
+  {data:"2026-06-23",tipo:"CPDO",sit:"Prevista",id:"CPDO-08/2026",ano:"2026"},
+  {data:"2026-06-30",tipo:"Ordinária",sit:"Prevista",id:"13/2026 - RPO",ano:"2026"},
+  {data:"2026-07-07",tipo:"CPDO",sit:"Prevista",id:"CPDO-09/2026",ano:"2026"},
+  {data:"2026-07-14",tipo:"Ordinária",sit:"Prevista",id:"14/2026 - RPO",ano:"2026"},
+  {data:"2026-07-21",tipo:"CPDO",sit:"Prevista",id:"CPDO-10/2026",ano:"2026"},
+  {data:"2026-07-28",tipo:"Ordinária",sit:"Prevista",id:"15/2026 - RPO",ano:"2026"},
+  {data:"2026-08-04",tipo:"CPDO",sit:"Prevista",id:"CPDO-11/2026",ano:"2026"},
+  {data:"2026-08-11",tipo:"Ordinária",sit:"Prevista",id:"16/2026 - RPO",ano:"2026"},
+  {data:"2026-08-18",tipo:"CPDO",sit:"Prevista",id:"CPDO-12/2026",ano:"2026"},
+  {data:"2026-08-25",tipo:"Ordinária",sit:"Prevista",id:"17/2026 - RPO",ano:"2026"},
+  {data:"2026-09-01",tipo:"CPDO",sit:"Prevista",id:"CPDO-13/2026",ano:"2026"},
+  {data:"2026-09-08",tipo:"Ordinária",sit:"Prevista",id:"18/2026 - RPO",ano:"2026"},
+  {data:"2026-09-15",tipo:"CPDO",sit:"Prevista",id:"CPDO-14/2026",ano:"2026"},
+  {data:"2026-09-22",tipo:"Ordinária",sit:"Prevista",id:"19/2026 - RPO",ano:"2026"},
+  {data:"2026-09-29",tipo:"CPDO",sit:"Prevista",id:"CPDO-15/2026",ano:"2026"},
+  {data:"2026-10-06",tipo:"Ordinária",sit:"Prevista",id:"20/2026 - RPO",ano:"2026"},
+  {data:"2026-10-13",tipo:"CPDO",sit:"Prevista",id:"CPDO-16/2026",ano:"2026"},
+  {data:"2026-10-20",tipo:"Ordinária",sit:"Prevista",id:"21/2026 - RPO",ano:"2026"},
+  {data:"2026-10-27",tipo:"CPDO",sit:"Prevista",id:"CPDO-17/2026",ano:"2026"},
+  {data:"2026-11-03",tipo:"Ordinária",sit:"Prevista",id:"22/2026 - RPO",ano:"2026"},
+  {data:"2026-11-10",tipo:"CPDO",sit:"Prevista",id:"CPDO-18/2026",ano:"2026"},
+  {data:"2026-11-17",tipo:"Ordinária",sit:"Prevista",id:"23/2026 - RPO",ano:"2026"},
+  {data:"2026-11-24",tipo:"CPDO",sit:"Prevista",id:"CPDO-19/2026",ano:"2026"},
+  {data:"2026-12-01",tipo:"Ordinária",sit:"Prevista",id:"24/2026 - RPO",ano:"2026"},
+  {data:"2026-12-08",tipo:"Ordinária",sit:"Prevista",id:"25/2026 - RPO",ano:"2026"},
+];
+
+// ── CALENDÁRIO MINI ───────────────────────────────────────────────────────────
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const now=new Date();
+let calVM=now.getMonth();
+let calVY=now.getFullYear();
+
+function calNav(dir){
+  calVM+=dir;
+  if(calVM<0){calVM=11;calVY--;}
+  if(calVM>11){calVM=0;calVY++;}
+  renderCalMini();
+}
+
+function dotClass(tipo){
+  if(tipo==='Extraordinária') return 'dot-rpe';
+  if(tipo==='Coletiva') return 'dot-rpc';
+  if(tipo==='CPDO') return 'dot-cpdo';
+  return 'dot-rpo';
+}
+
+function renderCalMini(){
+  const today=new Date();
+  const todayY=today.getFullYear(),todayM=today.getMonth(),todayD=today.getDate();
+
+  document.getElementById('calMiniTitle').textContent=`${MESES[calVM]} ${calVY}`;
+
+  const monthKey=`${calVY}-${String(calVM+1).padStart(2,'0')}`;
+  const meetMap={};
+  REUNIOES.filter(r=>r.data.startsWith(monthKey)).forEach(r=>{
+    const d=parseInt(r.data.split('-')[2]);
+    if(!meetMap[d])meetMap[d]=[];
+    meetMap[d].push(r);
+  });
+
+  const firstDay=new Date(calVY,calVM,1).getDay();
+  const daysInMonth=new Date(calVY,calVM+1,0).getDate();
+  const isCurrentMonth=(calVY===todayY&&calVM===todayM);
+
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-mini-day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const meets=meetMap[d]||[];
+    const isToday=isCurrentMonth&&d===todayD;
+    const isPast=(calVY<todayY)||(calVY===todayY&&calVM<todayM)||(isCurrentMonth&&d<todayD);
+    let cls='cal-mini-day';
+    if(isToday) cls+=' today';
+    if(meets.length) cls+=' has-meeting';
+    const cancelAll=meets.length&&meets.every(m=>m.sit==='Cancelada');
+    const numCls='cal-mini-num'+(cancelAll?' cal-cancel':'');
+    const dots=meets.map(m=>{
+      const dc=dotClass(m.tipo)+(m.sit==='Prevista'?' dot-prev':'');
+      return`<span class="cal-dot ${dc}" title="${m.id}${m.sit==='Cancelada'?' (Cancelada)':m.sit==='Prevista'?' (Prevista)':''}"></span>`;
+    }).join('');
+    const title=meets.map(m=>`${m.id}${m.sit==='Cancelada'?' – Cancelada':m.sit==='Prevista'?' – Prevista':''}`).join(' | ');
+    html+=`<div class="${cls}"${title?` title="${title}"`:''}${!isPast&&!isToday?'':''}>
+      <span class="${numCls}">${d}</span>
+      ${dots?`<div class="cal-mini-dots">${dots}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('calMiniGrid').innerHTML=html;
+
+  const tiposNoMes=[...new Set(REUNIOES.filter(r=>r.data.startsWith(monthKey)).map(r=>r.tipo))];
+  const legMap={
+    'Ordinária':`<span class="cal-dot dot-rpo"></span>Ordinária (RPO)`,
+    'Extraordinária':`<span class="cal-dot dot-rpe"></span>Extraordinária (RPE)`,
+    'Coletiva':`<span class="cal-dot dot-rpc"></span>Coletiva (RPC)`,
+    'CPDO':`<span class="cal-dot dot-cpdo"></span>Deliberativo (CPDO)`,
+  };
+  const legOrder=['Ordinária','Extraordinária','Coletiva','CPDO'];
+  let legHtml=legOrder.filter(t=>tiposNoMes.includes(t))
+    .map(t=>`<div class="cal-mini-leg-item">${legMap[t]}</div>`).join('');
+  const temPrevista=REUNIOES.some(r=>r.data.startsWith(monthKey)&&r.sit==='Prevista');
+  if(temPrevista) legHtml+=`<div class="cal-mini-leg-item"><span class="cal-dot dot-rpo dot-prev"></span>Prevista</div>`;
+  const temCancel=REUNIOES.some(r=>r.data.startsWith(monthKey)&&r.sit==='Cancelada');
+  if(temCancel) legHtml+=`<div class="cal-mini-leg-item"><span style="font-size:9px;text-decoration:line-through;color:var(--red)">dd</span> Cancelada</div>`;
+  document.getElementById('calMiniLeg').innerHTML=legHtml||'<div style="font-size:10px;color:var(--muted)">Sem reuniões neste mês</div>';
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function sw(name){
+  ['processos','fontes'].forEach((t,i)=>{
+    document.querySelectorAll('.tb')[i].classList.toggle('active',t===name);
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+    document.getElementById('tab-'+t).style.display=t===name?'block':'none';
+  });
+  // fix: pnl.active overrides display
+  document.querySelectorAll('.pnl').forEach(p=>{p.classList.remove('active')});
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ── CHATBOT ───────────────────────────────────────────────────────────────────
+let chatHistory=[];
+let chatApiKey=localStorage.getItem('aneel_api_key')||'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';
+let chatOpen=false;
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+  if(chatOpen){
+    if(!chatApiKey){
+      document.getElementById('chatKeyTip').style.display='block';
+    }
+    const body=document.getElementById('chatBody');
+    if(!body.children.length) initChatWelcome();
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function initChatWelcome(){
+  document.getElementById('chatBody').innerHTML=`<div class="chat-msg chat-assistant">
+    Olá! Sou o assistente especializado nos processos da ANEEL (2024–2026).<br><br>
+    Posso responder perguntas como:<br>
+    <em>• Quais processos da Energisa foram deliberados?</em><br>
+    <em>• Quantos processos de DUP existem em 2025?</em><br>
+    <em>• Qual a decisão no processo 50000.004741/2021-85?</em><br>
+    <em>• Mostre processos com Pedido de Vista do diretor X</em><br><br>
+    ${chatApiKey?'Como posso ajudar?':'<strong>Configure sua chave API clicando em 🔑 acima para começar.</strong>'}
+  </div>`;
+}
+
+function setApiKey(){
+  const key=prompt('Cole sua chave de API da Anthropic (sk-ant-...):\n\nA chave fica salva apenas no seu navegador (localStorage), não é enviada a nenhum servidor nosso.',chatApiKey||'');
+  if(key===null) return;
+  if(!key){
+    localStorage.removeItem('aneel_api_key');
+    chatApiKey='';
+    document.getElementById('chatKeyTip').style.display='block';
+    return;
+  }
+  if(!key.trim().startsWith('sk-ant-')){
+    alert('Chave inválida. A chave da Anthropic começa com sk-ant-');
+    return;
+  }
+  chatApiKey=key.trim();
+  localStorage.setItem('aneel_api_key',chatApiKey);
+  document.getElementById('chatKeyTip').style.display='none';
+  alert('Chave salva com sucesso!');
+}
+
+function clearChat(){
+  chatHistory=[];
+  initChatWelcome();
+}
+
+function chatKeydown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}
+}
+
+function getRelevantContext(question){
+  const q=question.toLowerCase();
+  // strip trailing punctuation from each token antes de buscar
+  const words=q.split(/[\s,;]+/)
+    .map(w=>w.replace(/[^a-z0-9À-ÿ.\-\/]/g,''))
+    .filter(w=>w.length>2&&!/^(qual|quais|como|onde|quando|quem|para|com|que|foi|são|dos|das|nos|nas|em|de|do|da|os|as|um|uma|por|sobre|tem|não|mais|isso|este|esta|esse|essa|processo|decisao|resultado|reuniao|numero)$/.test(w));
+  // sequência de dígitos para match direto de NUP
+  const rawDigits=q.replace(/\D/g,'');
+  if(!words.length&&rawDigits.length<5) return EXP.slice(0,30);
+  const scored=EXP.map(p=>{
+    const hay=[(p.procSingle||''),fmtProc(p.procSingle||''),(p.dir||''),(p.ass||''),(p.txt||''),(p.dec||''),(p.rp||''),(p.res||''),(p.tipoAto||''),(p.tema||''),(p.dr||''),(p.ato||'')].join(' ').toLowerCase();
+    let score=words.reduce((s,w)=>s+(hay.includes(w)?1:0),0);
+    // boost forte quando os dígitos da pergunta batem com o NUP
+    const pn=p.procSingle||'';
+    if(rawDigits.length>=5&&pn.startsWith(rawDigits.slice(0,5))) score+=5;
+    if(rawDigits.length>=11&&pn.includes(rawDigits.slice(0,11))) score+=10;
+    if(rawDigits.length===17&&pn===rawDigits) score+=50;
+    return{p,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  return scored.slice(0,50).map(x=>x.p);
+}
+
+function buildSystemPrompt(){
+  const total=EXP.length;
+  const p24=EXP.filter(p=>p.dr&&p.dr.startsWith('2024')).length;
+  const p25=EXP.filter(p=>p.dr&&p.dr.startsWith('2025')).length;
+  const p26=EXP.filter(p=>p.dr&&p.dr.startsWith('2026')).length;
+  return`Você é um assistente especializado nos processos das Reuniões Públicas da Diretoria da ANEEL (Agência Nacional de Energia Elétrica) de 2024 a 2026.
+
+Base de dados completa: ${total.toLocaleString('pt-BR')} registros — ${p24} em 2024, ${p25} em 2025, ${p26} em 2026.
+
+Cada registro possui:
+- dr: data da reunião (YYYY-MM-DD)
+- rp: identificação da reunião (ex: "15/2026 - RPO")
+- procSingle: número do processo NUP (formato NNNNN.NNNNNN/AAAA-DD)
+- ass: classificação do assunto (categoria oficial ANEEL)
+- tema: tema macro (DUP, Contencioso, Regulação, Tarifas, Outorga/Concessão, Cronograma/Prazo, Fiscalização, P&D, Outros)
+- dir: diretor relator
+- dec: texto da decisão/julgamento
+- res: resultado (Deliberado, Retirado da Pauta, Pedido de Vista, Parcialmente Deliberado, Não Deliberado)
+- ato: número do ato administrativo
+- tipoAto: tipo do ato (Resolução Normativa, Despacho, Resolução Autorizativa, etc.)
+- txt: assunto detalhado, empresas e agentes envolvidos
+
+Instruções:
+- Responda em português, de forma objetiva e baseada nos dados fornecidos no contexto
+- Use markdown para formatar (listas, negrito, etc.)
+- Se a pergunta envolver contagens ou análises, use os dados do contexto como amostra e indique se pode ser parcial
+- Se não houver dados suficientes no contexto, diga claramente mas tente ajudar com o que tiver
+- Para números de processo, use o formato NUP: NNNNN.NNNNNN/AAAA-DD
+- Seja conciso mas completo`;
+}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const question=input.value.trim();
+  if(!question) return;
+  if(!chatApiKey){
+    setApiKey();
+    return;
+  }
+  addChatMsg('user',question);
+  input.value='';
+  input.style.height='auto';
+  const btn=document.getElementById('chatSendBtn');
+  btn.disabled=true;
+
+  const relevant=getRelevantContext(question);
+  const ctxStr=relevant.length
+    ?'\n\nRegistros relevantes encontrados ('+relevant.length+'):\n'+relevant.map(p=>`[${p.dr}] ${fmtProc(p.procSingle||'')} | Tema: ${p.tema} | Assunto: ${p.ass} | Dir: ${p.dir||'—'} | Resultado: ${p.res||'—'} | ${(p.txt||p.dec||'').substring(0,180)}`).join('\n')
+    :'\n\nNenhum registro com correspondência direta encontrado para esta consulta.';
+
+  const msgId='cmsg-'+Date.now();
+  addChatMsg('assistant','',msgId);
+  const userMsg={role:'user',content:question+ctxStr};
+  chatHistory.push(userMsg);
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':chatApiKey,
+        'anthropic-version':'2023-06-01',
+        'content-type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1200,
+        system:buildSystemPrompt(),
+        messages:chatHistory,
+        stream:true,
+      }),
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({error:{message:resp.statusText}}));
+      throw new Error(err.error?.message||'Erro HTTP '+resp.status);
+    }
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let fullText='';
+    const el=document.getElementById(msgId);
+    while(true){
+      const{done,value}=await reader.read();
+      if(done) break;
+      for(const line of dec.decode(value).split('\n')){
+        if(!line.startsWith('data: ')) continue;
+        const data=line.slice(6);
+        if(data==='[DONE]') break;
+        try{
+          const j=JSON.parse(data);
+          if(j.type==='content_block_delta'&&j.delta?.text){
+            fullText+=j.delta.text;
+            if(el){el.innerHTML=mdToHtml(fullText)+'<span class="chat-cursor">▋</span>';}
+            const body=document.getElementById('chatBody');
+            body.scrollTop=body.scrollHeight;
+          }
+        }catch(e){}
+      }
+    }
+    if(el) el.innerHTML=mdToHtml(fullText);
+    chatHistory.push({role:'assistant',content:fullText});
+  }catch(err){
+    const el=document.getElementById(msgId);
+    if(el) el.innerHTML=`<span style="color:var(--red)">⚠ Erro: ${E(err.message)}</span>`;
+    chatHistory.pop();
+  }finally{
+    btn.disabled=false;
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function addChatMsg(role,text,id){
+  const body=document.getElementById('chatBody');
+  const div=document.createElement('div');
+  div.className='chat-msg chat-'+role;
+  if(id) div.id=id;
+  div.innerHTML=role==='user'?E(text)
+    :text?mdToHtml(text):'<div class="chat-typing"><span></span><span></span><span></span></div>';
+  body.appendChild(div);
+  body.scrollTop=body.scrollHeight;
+}
+
+function mdToHtml(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^#### (.+)$/gm,'<h4>$1</h4>')
+    .replace(/^### (.+)$/gm,'<h4>$1</h4>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^# (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/^(\d+)\. (.+)$/gm,'<li>$2</li>')
+    .replace(/(<li>[\s\S]+?<\/li>(?:\s*<li>[\s\S]+?<\/li>)*)/g,'<ul>$1</ul>')
+    .replace(/\n\n+/g,'</p><p>')
+    .replace(/\n/g,'<br>')
+    .replace(/^(.+)$/,'<p>$1</p>');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    buildData();
+    renderStats();
+    initFilters();
+    rend();
+    document.querySelectorAll('thead th')[0].classList.add('sd');
+    document.getElementById('loading').classList.add('hidden');
+  },30);
+});
+</script>
+</body>
+</html>
