@@ -3,7 +3,7 @@ name: Atualizar dados ANEEL
 on:
   schedule:
     # Toda segunda-feira às 09:00 UTC (06:00 horário de Brasília)
-    - cron: '0 9 * * 1'
+    - cron: '0 17 * * *'
   workflow_dispatch:
     # Permite executar manualmente pelo painel do GitHub
 
