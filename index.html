@@ -247,7 +247,7 @@
     .chat-send-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
     .chat-send-btn:hover{background:var(--blue-mid)}
     .chat-send-btn:disabled{opacity:.45;cursor:default}
-    .chat-key-tip{font-size:10px;color:var(--muted);padding:6px 12px;border-top:1px solid var(--border);text-align:center;flex-shrink:0}
+
     @media(max-width:440px){.chat-panel{right:10px;width:calc(100vw - 20px)}}
 
     footer{padding:14px 24px;color:var(--muted);font-size:10px;text-align:center;border-top:1px solid var(--border)}
@@ -273,7 +273,6 @@
     </div>
   </div>
   <div class="chat-body" id="chatBody"></div>
-  <div class="chat-key-tip" id="chatKeyTip" style="display:none">Chave API não configurada — clique em 🔑</div>
   <div class="chat-footer">
     <textarea id="chatInput" placeholder="Pergunte sobre processos, empresas, decisões…" onkeydown="chatKeydown(event)" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px'"></textarea>
     <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()" title="Enviar">➤</button>
@@ -287,7 +286,7 @@
       <h1>Processos das Reuniões Públicas da Diretoria — 2024 a 2026</h1>
       <p>Compilado de dados oficiais da Agência Nacional de Energia Elétrica</p>
     </div>
-    <div class="hdr-badge">Atualizado 07/05/2026</div>
+    <div class="hdr-badge">Atualizado 05/05/2026</div>
   </div>
 </header>
 
@@ -1159,16 +1158,12 @@ function sw(name){
 
 // ── CHATBOT ───────────────────────────────────────────────────────────────────
 let chatHistory=[];
-let chatApiKey=localStorage.getItem('aneel_api_key')||'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';
 let chatOpen=false;
 
 function toggleChat(){
   chatOpen=!chatOpen;
   document.getElementById('chatPanel').classList.toggle('open',chatOpen);
   if(chatOpen){
-    if(!chatApiKey){
-      document.getElementById('chatKeyTip').style.display='block';
-    }
     const body=document.getElementById('chatBody');
     if(!body.children.length) initChatWelcome();
     document.getElementById('chatInput').focus();
@@ -1183,28 +1178,10 @@ function initChatWelcome(){
     <em>• Quantos processos de DUP existem em 2025?</em><br>
     <em>• Qual a decisão no processo 50000.004741/2021-85?</em><br>
     <em>• Mostre processos com Pedido de Vista do diretor X</em><br><br>
-    ${chatApiKey?'Como posso ajudar?':'<strong>Configure sua chave API clicando em 🔑 acima para começar.</strong>'}
+    Como posso ajudar?
   </div>`;
 }
 
-function setApiKey(){
-  const key=prompt('Cole sua chave de API da Anthropic (sk-ant-...):\n\nA chave fica salva apenas no seu navegador (localStorage), não é enviada a nenhum servidor nosso.',chatApiKey||'');
-  if(key===null) return;
-  if(!key){
-    localStorage.removeItem('aneel_api_key');
-    chatApiKey='';
-    document.getElementById('chatKeyTip').style.display='block';
-    return;
-  }
-  if(!key.trim().startsWith('sk-ant-')){
-    alert('Chave inválida. A chave da Anthropic começa com sk-ant-');
-    return;
-  }
-  chatApiKey=key.trim();
-  localStorage.setItem('aneel_api_key',chatApiKey);
-  document.getElementById('chatKeyTip').style.display='none';
-  alert('Chave salva com sucesso!');
-}
 
 function clearChat(){
   chatHistory=[];
@@ -1272,10 +1249,6 @@ async function sendChat(){
   const input=document.getElementById('chatInput');
   const question=input.value.trim();
   if(!question) return;
-  if(!chatApiKey){
-    setApiKey();
-    return;
-  }
   addChatMsg('user',question);
   input.value='';
   input.style.height='auto';
@@ -1293,20 +1266,12 @@ async function sendChat(){
   chatHistory.push(userMsg);
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('/api/chat',{
       method:'POST',
-      headers:{
-        'x-api-key':chatApiKey,
-        'anthropic-version':'2023-06-01',
-        'content-type':'application/json',
-        'anthropic-dangerous-direct-browser-access':'true',
-      },
+      headers:{'content-type':'application/json'},
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:1200,
         system:buildSystemPrompt(),
         messages:chatHistory,
-        stream:true,
       }),
     });
     if(!resp.ok){
