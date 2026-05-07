@@ -97,12 +97,22 @@
     colgroup col.c-data  {width:7%}
     colgroup col.c-reun  {width:9%}
     colgroup col.c-proc  {width:14%}
-    colgroup col.c-categ {width:13%}
+    colgroup col.c-categ {width:10%}
     colgroup col.c-dir   {width:11%}
     colgroup col.c-tema  {width:10%}
     colgroup col.c-res   {width:13%}
     colgroup col.c-ato   {width:10%}
+    colgroup col.c-rel   {width:3%}
     colgroup col.c-ico   {width:3%}
+    .rel-star{font-size:15px;cursor:pointer;color:#d1d9e6;transition:color .15s;display:block;text-align:center;line-height:1;padding:2px 0}
+    .rel-star:hover{color:#f59e0b}
+    .rel-star.rel-on{color:#f59e0b}
+    tbody tr.data-row.rel-row{background:#fffdf0}
+    tbody tr.data-row.rel-row:hover{background:#fef9c3}
+    .rel-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px;line-height:1.8}
+    .rel-actions{display:flex;justify-content:flex-end;padding:10px 0 2px}
+    .btn-danger{height:30px;padding:0 12px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+    .btn-danger:hover{background:#fee2e2}
     thead th{background:var(--blue);color:#fff;padding:9px 10px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;overflow:hidden;cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
     thead th:hover{background:var(--blue-mid)}
     thead th.sa::after{content:' ▲'} thead th.sd::after{content:' ▼'}
@@ -287,6 +297,7 @@
   <div class="card">
     <div class="tabs">
       <button class="tb active" onclick="sw('processos')">📂 Processos</button>
+      <button class="tb" id="tbRel" onclick="sw('relevantes')">⭐ Relevantes</button>
       <button class="tb" onclick="sw('fontes')">🔗 Fontes Oficiais</button>
     </div>
 
@@ -333,7 +344,7 @@
           <colgroup>
             <col class="c-data"><col class="c-reun"><col class="c-proc">
             <col class="c-tema"><col class="c-dir"><col class="c-categ">
-            <col class="c-res"><col class="c-ato"><col class="c-ico">
+            <col class="c-res"><col class="c-ato"><col class="c-rel"><col class="c-ico">
           </colgroup>
           <thead><tr>
             <th onclick="srt('dr')">Data</th>
@@ -344,6 +355,7 @@
             <th onclick="srt('ass')">Classificação</th>
             <th onclick="srt('res')">Resultado</th>
             <th onclick="srt('tipoAto')">Ato Admin.</th>
+            <th title="Marcar como relevante" style="cursor:default">★</th>
             <th></th>
           </tr></thead>
           <tbody id="tbody"></tbody>
@@ -360,6 +372,11 @@
         <div class="pi" id="pi"></div>
         <div class="pb-wrap" id="pbWrap"></div>
       </div>
+    </div>
+
+    <!-- ── RELEVANTES ── -->
+    <div class="pnl" id="tab-relevantes" style="display:none">
+      <div id="relContent"></div>
     </div>
 
     <!-- ── FONTES ── -->
@@ -604,13 +621,14 @@ function rend(){
   document.querySelectorAll('.expand-row').forEach(r=>r.remove());
 
   if(!page.length){
-    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted)">Nenhum resultado encontrado.</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--muted)">Nenhum resultado encontrado.</td></tr>`;
     renderPager(pages,pp);return;
   }
 
   tbody.innerHTML=page.map((p,i)=>{
     const rid=`r${st+i}`;
-    return`<tr class="data-row" id="${rid}" onclick="toggle('${rid}',${st+i})">
+    const marked=REL.has(p.procSingle);
+    return`<tr class="data-row${marked?' rel-row':''}" id="${rid}" onclick="toggle('${rid}',${st+i})">
       <td title="${E(p.dr)}">${fd(p.dr)}</td>
       <td title="${E(p.rp)}">${rpBadge(p.rp)}</td>
       <td class="wrap" style="word-break:break-all;white-space:normal"><span class="proc-chip" title="${E(fmtProc(p.procSingle))}">${E(fmtProc(p.procSingle))}</span></td>
@@ -619,6 +637,7 @@ function rend(){
       <td title="${E(p.ass)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E(p.ass||'—')}</td>
       <td>${resBadge(p.res)}</td>
       <td title="${E(p.tipoAto)+(p.ato&&p.ato!=='0'?' – Nº '+p.ato:'')}">${E(atoLabel(p.tipoAto))}${p.ato&&p.ato!=='0'?`<br><small style="color:var(--muted);font-size:9px">Nº ${E(p.ato)}</small>`:''}</td>
+      <td onclick="toggleRel('${E(p.procSingle)}',event)" title="${marked?'Remover dos relevantes':'Marcar como relevante'}"><span class="rel-star${marked?' rel-on':''}">${marked?'★':'☆'}</span></td>
       <td class="ico-expand"></td>
     </tr>`;
   }).join('');
@@ -1038,15 +1057,104 @@ function renderCalMini(){
 }
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
-function sw(name){
-  ['processos','fontes'].forEach((t,i)=>{
-    document.querySelectorAll('.tb')[i].classList.toggle('active',t===name);
-    document.getElementById('tab-'+t).classList.toggle('active',t===name);
-    document.getElementById('tab-'+t).style.display=t===name?'block':'none';
+// ── RELEVANTES ────────────────────────────────────────────────────────────────
+let REL=new Set(JSON.parse(localStorage.getItem('aneel_rel')||'[]'));
+
+function saveRel(){localStorage.setItem('aneel_rel',JSON.stringify([...REL]));}
+
+function updateRelBadge(){
+  const n=REL.size;
+  document.getElementById('tbRel').textContent=n>0?`⭐ Relevantes (${n})`:'⭐ Relevantes';
+}
+
+function toggleRel(procNum,event){
+  event.stopPropagation();
+  if(REL.has(procNum)) REL.delete(procNum); else REL.add(procNum);
+  saveRel();
+  updateRelBadge();
+  rend();
+  const relPane=document.getElementById('tab-relevantes');
+  if(relPane.classList.contains('active')) renderRelevantes();
+}
+
+function clearRel(){
+  if(!confirm('Remover todos os processos relevantes?')) return;
+  REL.clear();
+  saveRel();
+  updateRelBadge();
+  rend();
+  renderRelevantes();
+}
+
+function renderRelevantes(){
+  const container=document.getElementById('relContent');
+  const items=EXP.filter(p=>REL.has(p.procSingle));
+  // deduplica: mostra a entrada mais recente de cada processo
+  const seen=new Set();
+  const unique=[];
+  [...items].sort((a,b)=>(b.dr||'').localeCompare(a.dr||'')).forEach(p=>{
+    if(!seen.has(p.procSingle)){seen.add(p.procSingle);unique.push(p);}
   });
-  // fix: pnl.active overrides display
-  document.querySelectorAll('.pnl').forEach(p=>{p.classList.remove('active')});
+
+  if(!unique.length){
+    container.innerHTML=`<div class="rel-empty">
+      Nenhum processo marcado como relevante ainda.<br>
+      <small>Clique na estrela ☆ em qualquer linha da aba <strong>Processos</strong> para marcar.</small>
+    </div>`;
+    return;
+  }
+
+  const rows=unique.map((p,i)=>{
+    const rid=`rl${i}`;
+    const allOcurr=EXP.filter(x=>x.procSingle===p.procSingle);
+    return`<tr class="data-row rel-row" id="${rid}" onclick="toggle('${rid}',${EXP.indexOf(p)})">
+      <td title="${E(p.dr)}">${fd(p.dr)}</td>
+      <td title="${E(p.rp)}">${rpBadge(p.rp)}</td>
+      <td class="wrap" style="word-break:break-all;white-space:normal"><span class="proc-chip" title="${E(fmtProc(p.procSingle))}">${E(fmtProc(p.procSingle))}</span></td>
+      <td>${temaBadge(p.tema)}</td>
+      <td title="${E(p.dir)}">${E(dirLabel(p.dir))}</td>
+      <td title="${E(p.ass)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E(p.ass||'—')}</td>
+      <td>${resBadge(p.res)}</td>
+      <td title="${E(p.tipoAto)+(p.ato&&p.ato!=='0'?' – Nº '+p.ato:'')}">${E(atoLabel(p.tipoAto))}${p.ato&&p.ato!=='0'?`<br><small style="color:var(--muted);font-size:9px">Nº ${E(p.ato)}</small>`:''}</td>
+      <td onclick="toggleRel('${E(p.procSingle)}',event)" title="Remover dos relevantes"><span class="rel-star rel-on">★</span></td>
+      <td class="ico-expand"></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML=`
+    <div class="rel-actions">
+      <span style="font-size:11px;color:var(--muted);margin-right:auto">${unique.length} processo(s) marcado(s)</span>
+      <button class="btn-danger" onclick="clearRel()">🗑 Limpar todos</button>
+    </div>
+    <div class="tw"><table>
+      <colgroup>
+        <col class="c-data"><col class="c-reun"><col class="c-proc">
+        <col class="c-tema"><col class="c-dir"><col class="c-categ">
+        <col class="c-res"><col class="c-ato"><col class="c-rel"><col class="c-ico">
+      </colgroup>
+      <thead><tr>
+        <th>Data</th><th>Reunião</th><th>Nº Processo</th>
+        <th>Tema</th><th>Diretor Relator</th><th>Classificação</th>
+        <th>Resultado</th><th>Ato Admin.</th>
+        <th title="Remover" style="cursor:default">★</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function sw(name){
+  ['processos','relevantes','fontes'].forEach((t,i)=>{
+    const btn=document.querySelectorAll('.tb')[i];
+    if(btn) btn.classList.toggle('active',t===name);
+    const pnl=document.getElementById('tab-'+t);
+    if(pnl){
+      pnl.classList.toggle('active',t===name);
+      pnl.style.display=t===name?'block':'none';
+    }
+  });
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
+  if(name==='relevantes') renderRelevantes();
 }
 
 // ── CHATBOT ───────────────────────────────────────────────────────────────────
@@ -1273,6 +1381,7 @@ window.addEventListener('load',()=>{
   setTimeout(()=>{
     buildData();
     renderStats();
+    updateRelBadge();
     initFilters();
     rend();
     document.querySelectorAll('thead th')[0].classList.add('sd');
