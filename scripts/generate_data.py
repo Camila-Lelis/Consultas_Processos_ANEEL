@@ -93,6 +93,7 @@ def main():
 
     today = datetime.utcnow().strftime("%d/%m/%Y")
     html_new = re.sub(r"Atualizado \d{2}/\d{2}/\d{4}", f"Atualizado {today}", html)
+    html_new = re.sub(r"Base atualizada em \d{2}/\d{2}/\d{4}", f"Base atualizada em {today}", html_new)
 
     with open(idx_path, "w", encoding="utf-8") as f:
         f.write(html_new)
@@ -101,3 +102,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
