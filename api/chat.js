@@ -1,4 +1,12 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -8,7 +16,6 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -19,8 +26,8 @@ export default async function handler(req, res) {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
         system,
         messages,
         stream: true,
@@ -46,4 +53,4 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).end(JSON.stringify({ error: { message: error.message } }));
   }
-}
+};
