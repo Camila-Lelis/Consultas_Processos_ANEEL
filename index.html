@@ -1194,55 +1194,70 @@ function chatKeydown(e){
 
 function getRelevantContext(question){
   const q=question.toLowerCase();
-  // strip trailing punctuation from each token antes de buscar
   const words=q.split(/[\s,;]+/)
     .map(w=>w.replace(/[^a-z0-9À-ÿ.\-\/]/g,''))
-    .filter(w=>w.length>2&&!/^(qual|quais|como|onde|quando|quem|para|com|que|foi|são|dos|das|nos|nas|em|de|do|da|os|as|um|uma|por|sobre|tem|não|mais|isso|este|esta|esse|essa|processo|decisao|resultado|reuniao|numero)$/.test(w));
-  // sequência de dígitos para match direto de NUP
+    .filter(w=>w.length>2&&!/^(qual|quais|como|onde|quando|quem|para|com|que|foi|são|dos|das|nos|nas|em|de|do|da|os|as|um|uma|por|sobre|tem|não|mais|isso|este|esta|esse|essa|processo|processos|decisao|resultado|reuniao|reunioes|numero|todos|todas|liste|listar|mostre|mostrar|existem|tiveram|foram|houve|quantos|quantas)$/.test(w));
   const rawDigits=q.replace(/\D/g,'');
-  if(!words.length&&rawDigits.length<5) return EXP.slice(0,30);
+  const anoFiltro=q.match(/\b(2024|2025|2026)\b/)?.[0];
+  if(!words.length&&rawDigits.length<5) return EXP.slice(0,50);
   const scored=EXP.map(p=>{
     const hay=[(p.procSingle||''),fmtProc(p.procSingle||''),(p.dir||''),(p.ass||''),(p.txt||''),(p.dec||''),(p.rp||''),(p.res||''),(p.tipoAto||''),(p.tema||''),(p.dr||''),(p.ato||'')].join(' ').toLowerCase();
     let score=words.reduce((s,w)=>s+(hay.includes(w)?1:0),0);
-    // boost forte quando os dígitos da pergunta batem com o NUP
     const pn=p.procSingle||'';
     if(rawDigits.length>=5&&pn.startsWith(rawDigits.slice(0,5))) score+=5;
     if(rawDigits.length>=11&&pn.includes(rawDigits.slice(0,11))) score+=10;
     if(rawDigits.length===17&&pn===rawDigits) score+=50;
+    if(anoFiltro&&p.dr&&p.dr.startsWith(anoFiltro)) score+=2;
     return{p,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
-  return scored.slice(0,50).map(x=>x.p);
+  return scored.slice(0,100).map(x=>x.p);
 }
 
 function buildSystemPrompt(){
   const total=EXP.length;
-  const p24=EXP.filter(p=>p.dr&&p.dr.startsWith('2024')).length;
-  const p25=EXP.filter(p=>p.dr&&p.dr.startsWith('2025')).length;
-  const p26=EXP.filter(p=>p.dr&&p.dr.startsWith('2026')).length;
-  return`Você é um assistente especializado nos processos das Reuniões Públicas da Diretoria da ANEEL (Agência Nacional de Energia Elétrica) de 2024 a 2026.
+  const anos=['2024','2025','2026'];
+  const temas=['DUP','Contencioso','Regulação','Tarifas','Outorga/Concessão','Cronograma/Prazo','Fiscalização','P&D','Outros'];
+  const resultados=['Deliberado','Retirado da Pauta','Pedido de Vista','Parcialmente Deliberado','Não Deliberado'];
+  const byTema={};temas.forEach(t=>{byTema[t]={total:0,'2024':0,'2025':0,'2026':0};});
+  const byRes={};resultados.forEach(r=>{byRes[r]={total:0,'2024':0,'2025':0,'2026':0};});
+  const byDir={};
+  EXP.forEach(p=>{
+    const ano=(p.dr||'').substring(0,4);
+    const t=p.tema||'Outros';
+    if(byTema[t]){byTema[t].total++;if(anos.includes(ano))byTema[t][ano]++;}
+    const rKey=resultados.find(r=>(p.res||'').includes(r));
+    if(rKey){byRes[rKey].total++;if(anos.includes(ano))byRes[rKey][ano]++;}
+    if(p.dir)byDir[p.dir]=(byDir[p.dir]||0)+1;
+  });
+  const p24=byTema['DUP']['2024']+byTema['Contencioso']['2024']+byTema['Regulação']['2024']+byTema['Tarifas']['2024']+byTema['Outorga/Concessão']['2024']+byTema['Cronograma/Prazo']['2024']+byTema['Fiscalização']['2024']+byTema['P&D']['2024']+byTema['Outros']['2024'];
+  const p25=byTema['DUP']['2025']+byTema['Contencioso']['2025']+byTema['Regulação']['2025']+byTema['Tarifas']['2025']+byTema['Outorga/Concessão']['2025']+byTema['Cronograma/Prazo']['2025']+byTema['Fiscalização']['2025']+byTema['P&D']['2025']+byTema['Outros']['2025'];
+  const p26=total-p24-p25;
+  const temaStats=temas.map(t=>`  ${t}: ${byTema[t].total} (2024=${byTema[t]['2024']}, 2025=${byTema[t]['2025']}, 2026=${byTema[t]['2026']})`).join('\n');
+  const resStats=resultados.map(r=>`  ${r}: ${byRes[r].total} (2024=${byRes[r]['2024']}, 2025=${byRes[r]['2025']}, 2026=${byRes[r]['2026']})`).join('\n');
+  const dirStats=Object.entries(byDir).sort((a,b)=>b[1]-a[1]).map(([d,c])=>`  ${d}: ${c}`).join('\n');
+  return`Você é um assistente especializado nos processos das Reuniões Públicas da Diretoria da ANEEL (2024–2026).
 
-Base de dados completa: ${total.toLocaleString('pt-BR')} registros — ${p24} em 2024, ${p25} em 2025, ${p26} em 2026.
+BASE DE DADOS: ${total.toLocaleString('pt-BR')} registros — ${p24} em 2024, ${p25} em 2025, ${p26} em 2026.
 
-Cada registro possui:
-- dr: data da reunião (YYYY-MM-DD)
-- rp: identificação da reunião (ex: "15/2026 - RPO")
-- procSingle: número do processo NUP (formato NNNNN.NNNNNN/AAAA-DD)
-- ass: classificação do assunto (categoria oficial ANEEL)
-- tema: tema macro (DUP, Contencioso, Regulação, Tarifas, Outorga/Concessão, Cronograma/Prazo, Fiscalização, P&D, Outros)
-- dir: diretor relator
-- dec: texto da decisão/julgamento
-- res: resultado (Deliberado, Retirado da Pauta, Pedido de Vista, Parcialmente Deliberado, Não Deliberado)
-- ato: número do ato administrativo
-- tipoAto: tipo do ato (Resolução Normativa, Despacho, Resolução Autorizativa, etc.)
-- txt: assunto detalhado, empresas e agentes envolvidos
+ESTATÍSTICAS EXATAS POR TEMA (use para perguntas de contagem):
+${temaStats}
 
-Instruções:
-- Responda em português, de forma objetiva e baseada nos dados fornecidos no contexto
-- Use markdown para formatar (listas, negrito, etc.)
-- Se a pergunta envolver contagens ou análises, use os dados do contexto como amostra e indique se pode ser parcial
-- Se não houver dados suficientes no contexto, diga claramente mas tente ajudar com o que tiver
-- Para números de processo, use o formato NUP: NNNNN.NNNNNN/AAAA-DD
-- Seja conciso mas completo`;
+ESTATÍSTICAS EXATAS POR RESULTADO:
+${resStats}
+
+DIRETORES RELATORES E QUANTIDADE DE PROCESSOS:
+${dirStats}
+
+ESTRUTURA DOS REGISTROS: dr=data(YYYY-MM-DD), rp=identificação da reunião, procSingle=NUP(NNNNN.NNNNNN/AAAA-DD), ass=classificação oficial, tema=tema macro, dir=diretor relator, dec=texto da decisão, res=resultado, ato=número do ato, tipoAto=tipo do ato, txt=assunto detalhado e empresas envolvidas.
+
+INSTRUÇÕES:
+- Responda em português, de forma objetiva
+- Para perguntas de CONTAGEM use as estatísticas exatas acima — elas representam 100% da base
+- Para perguntas sobre processos ESPECÍFICOS use os registros do contexto fornecidos na mensagem
+- Use markdown para formatar (listas, negrito, tabelas)
+- Para NUP use o formato: NNNNN.NNNNNN/AAAA-DD
+- Se a amostra de registros parecer incompleta para uma listagem, avise o usuário
+- Seja objetivo e completo`;
 }
 
 async function sendChat(){
@@ -1257,8 +1272,8 @@ async function sendChat(){
 
   const relevant=getRelevantContext(question);
   const ctxStr=relevant.length
-    ?'\n\nRegistros relevantes encontrados ('+relevant.length+'):\n'+relevant.map(p=>`[${p.dr}] ${fmtProc(p.procSingle||'')} | Tema: ${p.tema} | Assunto: ${p.ass} | Dir: ${p.dir||'—'} | Resultado: ${p.res||'—'} | ${(p.txt||p.dec||'').substring(0,180)}`).join('\n')
-    :'\n\nNenhum registro com correspondência direta encontrado para esta consulta.';
+    ?'\n\nRegistros relevantes ('+relevant.length+' de '+EXP.length+' total):\n'+relevant.map(p=>`[${p.dr}] ${fmtProc(p.procSingle||'')} | ${p.tema} | ${p.ass} | Dir: ${p.dir||'—'} | Resultado: ${p.res||'—'}${p.tipoAto?' | '+p.tipoAto+(p.ato?' nº'+p.ato:''):''}${p.txt?' | Envolvidos: '+p.txt.substring(0,300):''}${p.dec?' | Decisão: '+p.dec.substring(0,250):''}`).join('\n')
+    :'\n\nNenhum registro com correspondência direta encontrado. Responda com base nas estatísticas gerais quando possível.';
 
   const msgId='cmsg-'+Date.now();
   addChatMsg('assistant','',msgId);
@@ -1356,3 +1371,4 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
+
