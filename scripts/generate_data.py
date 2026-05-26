@@ -6,7 +6,10 @@ import csv
 import io
 import re
 import os
+import urllib3
 from datetime import datetime
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 CSV_URL = (
     "https://dadosabertos.aneel.gov.br/dataset/"
@@ -40,7 +43,7 @@ def parse_date(raw):
 
 def main():
     print("Baixando CSV da ANEEL...")
-    resp = requests.get(CSV_URL, timeout=180)
+    resp = requests.get(CSV_URL, timeout=180, verify=False)
     resp.encoding = "iso-8859-1"
     print(f"Download concluido: {len(resp.text):,} caracteres")
 
@@ -102,4 +105,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
